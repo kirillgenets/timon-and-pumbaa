@@ -34,15 +34,15 @@
           <button class="start-game-button button">Начать</button>
         </div>
         <!-- Панель с состоянием игры -->
-        <div class="panel">
+        <div class="panel hidden">
           <div class="caterpillar-counter-wrapper counter-wrapper">
-            <span class="counter-description">Съедено:</span>
+            <p class="counter-description">Съедено:</p>
           </div>
-          <div class="xp-counter-wrapper counter-wrapper">
-            <span class="counter-description">HP:</span>
+          <div class="hp-counter-wrapper counter-wrapper">
+            <p class="counter-description">HP:</p>
           </div>
           <div class="time-counter-wrapper counter-wrapper">
-            <span class="counter-description">Время:</span>
+            <p class="counter-description">Время:</p>
           </div>
         </div>
         <!-- Игровое поле -->
@@ -62,7 +62,9 @@
           alt="Гусеница"
         />
       </template>
-      <template id="hp-scale"></template>
+      <div class="hp-scale">
+        <div class="hp-scale-value"></div>
+      </div>
       <template id="counter">
         <span class="counter"></span>
       </template>
