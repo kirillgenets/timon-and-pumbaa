@@ -1,0 +1,57 @@
+/* Общеигровые стили */
+
+body {
+  margin: 0;
+  padding: 0;
+
+  font-family: "Tahoma", Arial, sans-serif;
+  font-size: 14px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Контейнер игры */
+
+.game {
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
+
+  background-image: url("../media/img/start-bg.jpg");
+  background-size: cover;
+}
+
+/* Игровое поле */
+
+.playground {
+  width: 100vw;
+  height: 80vh;
+
+  background-image: url("../media/img/game-bg.jpg");
+  background-size: contain;
+}
+
+/* Модальное окно */
+
+.modal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: 40%;
+  padding: 15px;
+  border-radius: 15px;
+
+  background-color: rgba(0, 0, 0, 0.7);
+
+  color: #ffffff;
+  text-align: center;
+}
+
+.game-title {
+  font-size: 18px;
+}

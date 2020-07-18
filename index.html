@@ -4,11 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Тимон и Пумба</title>
+    <link rel="stylesheet" href="style/style.css" />
   </head>
   <body>
     <main>
       <!-- Контейнер игры -->
       <div class="game">
+        <div class="start-modal modal">
+          <h1 class="game-title">Тимон и Пумба</h1>
+          <p class="instructions">
+            Инструкции к игре:
+            <br />
+            <br />
+            1. Предысторию можно пропустить, нажав пробел. <br />
+            2. Управляйте персонажем, используя клавиши-стрелки влево, вправо
+            (бег) и вверх (прыжок). <br />
+            3. Перепрыгивайте через гиен. За каждое соприкосновение с гиеной
+            отбирается 30 HP. Если контакт длится больше 1 секунды, то 30 HP
+            списывается за каждую полную секунду контакта. <br />
+            4. Собирайте гусениц, чтобы увеличить HP. За каждую собранную
+            гусинецу добавляется 5 HP. <br />
+            5. Если HP равняется 0, игра заканчивается. <br />
+            6. При нажатии на клавишу Escape игра ставится на паузу. При
+            повторном нажатии игра возобновляется.
+            <br />
+            <br />
+            Удачи!
+          </p>
+          <button class="start-game-button button">Начать</button>
+        </div>
         <!-- Панель с состоянием игры -->
         <div class="panel">
           <div class="caterpillar-counter-wrapper counter-wrapper">
@@ -22,7 +46,7 @@
           </div>
         </div>
         <!-- Игровое поле -->
-        <div class="playground"></div>
+        <div class="playground hidden"></div>
       </div>
       <!-- Шаблоны игровых объектов -->
       <template id="character">
@@ -34,7 +58,7 @@
       <template id="caterpillar">
         <img
           class="caterpillar"
-          src="./media/img/caterpillar.png"
+          src="media/img/caterpillar.png"
           alt="Гусеница"
         />
       </template>
