@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тимон и Пумба</title>
+  </head>
+  <body>
+    <main>
+      <!-- Контейнер игры -->
+      <div class="game">
+        <!-- Панель с состоянием игры -->
+        <div class="panel">
+          <div class="caterpillar-counter-wrapper counter-wrapper">
+            <span class="counter-description">Съедено:</span>
+          </div>
+          <div class="xp-counter-wrapper counter-wrapper">
+            <span class="counter-description">HP:</span>
+          </div>
+          <div class="time-counter-wrapper counter-wrapper">
+            <span class="counter-description">Время:</span>
+          </div>
+        </div>
+        <!-- Игровое поле -->
+        <div class="playground"></div>
+      </div>
+      <!-- Шаблоны игровых объектов -->
+      <template id="character">
+        <div class="character"></div>
+      </template>
+      <template id="hyena">
+        <div class="hyena"></div>
+      </template>
+      <template id="caterpillar">
+        <img
+          class="caterpillar"
+          src="./media/img/caterpillar.png"
+          alt="Гусеница"
+        />
+      </template>
+      <template id="hp-scale"></template>
+      <template id="counter">
+        <span class="counter"></span>
+      </template>
+    </main>
+  </body>
+</html>
