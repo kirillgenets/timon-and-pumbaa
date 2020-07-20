@@ -1,3 +1,5 @@
+// Constants
+
 const SpriteData = {
   CHARACTER: {
     standing: {
@@ -63,7 +65,7 @@ const SpriteData = {
     },
     dying: {
       url: "./media/img/sprites/pumba-dying.png",
-      frameWidth: [
+      framesWidth: [
         103,
         103,
         114,
@@ -81,4 +83,83 @@ const SpriteData = {
       ],
     },
   },
+  HYENA: {
+    running: {
+      url: "./media/img/sprites/hyena-running.png",
+      framesWidth: 157,
+    },
+    biting: {
+      url: "./media/img/sprites/hyena-biting.png",
+      framesWidth: 144,
+    },
+  },
 };
+
+const Key = {
+  SPACE: "Space",
+};
+
+// DOM-elements
+
+const gameWrapperElement = document.querySelector(".game");
+
+const startModalElement = gameWrapperElement.querySelector(".start-modal");
+const loginInput = startModalElement.querySelector(".login-input");
+const startGameButton = startModalElement.querySelector(".start-game-button");
+
+const introVideoElement = gameWrapperElement.querySelector(".intro-video");
+
+const playgroundElement = gameWrapperElement.querySelector(".playground");
+const statePanelElement = gameWrapperElement.querySelector(".panel");
+
+// Utils
+
+const showElement = (element) => {
+  element.classList.remove("hidden");
+};
+
+const hideElement = (element) => {
+  element.classList.add("hidden");
+};
+
+// Event handlers
+
+const handleLoginInput = (evt) => {
+  if (evt.target.value) {
+    startGameButton.disabled = false;
+  } else {
+    startGameButton.disabled = true;
+  }
+};
+
+const handleIntroVideoEnded = () => {
+  hideElement(introVideoElement);
+  showElement(playgroundElement);
+  showElement(statePanelElement);
+};
+
+const handleIntroVideoCloseKeyDown = (evt) => {
+  if (evt.code !== Key.SPACE) return;
+
+  introVideoElement.pause();
+  introVideoElement.currentTime = 0;
+
+  hideElement(introVideoElement);
+  showElement(playgroundElement);
+  showElement(statePanelElement);
+};
+
+const handleStartGameButtonClick = () => {
+  hideElement(startModalElement);
+
+  introVideoElement.addEventListener("ended", handleIntroVideoEnded);
+  document.addEventListener("keydown", handleIntroVideoCloseKeyDown);
+
+  showElement(introVideoElement);
+  introVideoElement.play();
+};
+
+// Event listeners
+
+loginInput.addEventListener("input", handleLoginInput);
+startGameButton.addEventListener("click", handleStartGameButtonClick);

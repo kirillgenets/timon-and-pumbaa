@@ -31,8 +31,15 @@
             <br />
             Удачи!
           </p>
-          <button class="start-game-button button">Начать</button>
+          <input class="login-input" type="text" placeholder="Имя игрока" />
+          <button class="start-game-button button" disabled>Начать</button>
         </div>
+        <video
+          class="intro-video hidden"
+          src="media/video/intro.mp4"
+          width="100%"
+          height="100%"
+        ></video>
         <!-- Панель с состоянием игры -->
         <div class="panel hidden">
           <div class="caterpillar-counter-wrapper counter-wrapper">
@@ -62,12 +69,15 @@
           alt="Гусеница"
         />
       </template>
-      <div class="hp-scale">
-        <div class="hp-scale-value"></div>
-      </div>
+      <template id="hp-scale">
+        <div class="hp-scale">
+          <div class="hp-scale-value"></div>
+        </div>
+      </template>
       <template id="counter">
         <span class="counter"></span>
       </template>
     </main>
+    <script src="script/main.js"></script>
   </body>
 </html>
