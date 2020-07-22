@@ -143,7 +143,7 @@ body {
 }
 
 .character {
-  width: 136px;
+  width: 160px;
   height: 100px;
 
   background-image: url("../media/img/sprites/pumba-standing.png");

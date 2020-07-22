@@ -1,9 +1,12 @@
 // Constants
 
+const RIGHT_DIRECTION = "right";
+const LEFT_DIRECTION = "left";
+
 const SpriteData = {
   CHARACTER: {
     standing: {
-      url: "./media/img/sprites/pumba-standing.png",
+      url: "media/img/sprites/pumba-standing.png",
       framesWidth: [
         124,
         126,
@@ -23,7 +26,7 @@ const SpriteData = {
       ],
     },
     running: {
-      url: "./media/img/sprites/pumba-running.png",
+      url: "media/img/sprites/pumba-running.png",
       framesWidth: [
         110,
         111,
@@ -44,7 +47,7 @@ const SpriteData = {
       ],
     },
     jumping: {
-      url: "./media/img/sprites/pumba-jumping.png",
+      url: "media/img/sprites/pumba-jumping.png",
       framesWidth: [
         86,
         88,
@@ -64,7 +67,7 @@ const SpriteData = {
       ],
     },
     dying: {
-      url: "./media/img/sprites/pumba-dying.png",
+      url: "media/img/sprites/pumba-dying.png",
       framesWidth: [
         103,
         103,
@@ -85,11 +88,11 @@ const SpriteData = {
   },
   HYENA: {
     running: {
-      url: "./media/img/sprites/hyena-running.png",
+      url: "media/img/sprites/hyena-running.png",
       framesWidth: 157,
     },
     biting: {
-      url: "./media/img/sprites/hyena-biting.png",
+      url: "media/img/sprites/hyena-biting.png",
       framesWidth: 144,
     },
   },
@@ -98,6 +101,152 @@ const SpriteData = {
 const Key = {
   SPACE: "Space",
 };
+
+// Initial data
+
+const initialGameState = {
+  isStarted: false,
+  stats: [],
+};
+
+const initialCharacterData = {
+  width: 160,
+  height: 100,
+  sprite: SpriteData.CHARACTER,
+  speed: 1.5,
+  direction: RIGHT_DIRECTION,
+  position: {
+    x: 0,
+    y: 100,
+  },
+  backgroundPosition: 0,
+};
+
+const initialSpritesData = {
+  position: 0,
+};
+
+// Utils
+
+const showElement = (element) => {
+  element.classList.remove("hidden");
+};
+
+const hideElement = (element) => {
+  element.classList.add("hidden");
+};
+
+const getElementFromTemplate = (template) =>
+  template.content.querySelector("*").cloneNode(true);
+
+// Data models
+
+class GameStateDataModel {
+  constructor({ isStarted, stats }) {
+    this.isStarted = isStarted;
+    this.stats = stats;
+  }
+}
+
+class CharacterDataModel {
+  constructor({
+    width,
+    height,
+    spriteData,
+    speed,
+    direction,
+    position,
+    template,
+  }) {
+    this.width = width;
+    this.height = height;
+    this.spriteData = spriteData;
+    this.speed = speed;
+    this.direction = direction;
+    this.position = position;
+    this.template = template;
+  }
+}
+
+// Object views
+
+class AnimationSprite {
+  constructor({ url, framesWidth, position }) {
+    this._url = url;
+    this._framesWidth = framesWidth;
+    this._position = position;
+
+    this._pointer = 0;
+  }
+
+  _updatePosition() {
+    if (Array.isArray(this._framesWidth)) {
+      this._position += this._framesWidth[this._pointer];
+      this._pointer++;
+
+      return;
+    }
+
+    this._position += this._framesWidth;
+  }
+
+  animate(element) {
+    this._updatePosition();
+
+    element.style.backgroundImage = `url("${this._url}")`;
+    element.style.backgroundPosition = `${this._position}px`;
+  }
+}
+
+class GameObjectView {
+  constructor({ position, template }) {
+    this._position = position;
+    this._template = template;
+
+    this._element = null;
+  }
+
+  render() {
+    const { x, y } = this._position;
+
+    this._element = getElementFromTemplate(this._template);
+    this._element.style.left = `${x}px`;
+    this._element.style.bottom = `${y}px`;
+
+    return this._element;
+  }
+
+  destroy() {
+    if (!this._element) return;
+
+    this._element.remove();
+    this._element = null;
+  }
+
+  move(position) {
+    if (!this._element) return;
+
+    this._position = position;
+    this._element.style.left = `${this._position.x}px`;
+    this._element.style.bottom = `${this._position.y}px`;
+  }
+}
+
+class AnimatedGameObjectView extends GameObjectView {
+  constructor(props) {
+    super(props);
+  }
+
+  move(position, sprite) {
+    if (!this._element) return;
+
+    this._position = position;
+    this._element.style.left = `${this._position.x}px`;
+    this._element.style.bottom = `${this._position.y}px`;
+
+    sprite.animate(this._element);
+  }
+}
 
 // DOM-elements
 
@@ -112,14 +261,45 @@ const introVideoElement = gameWrapperElement.querySelector(".intro-video");
 const playgroundElement = gameWrapperElement.querySelector(".playground");
 const statePanelElement = gameWrapperElement.querySelector(".panel");
 
-// Utils
+// Data initialization
 
-const showElement = (element) => {
-  element.classList.remove("hidden");
+const gameState = new GameStateDataModel(initialGameState);
+
+let characterData = {};
+
+// Game functions
+
+const hideIntroVideo = () => {
+  introVideoElement.pause();
+  introVideoElement.currentTime = 0;
+
+  hideElement(introVideoElement);
+  showElement(playgroundElement);
+  showElement(statePanelElement);
 };
 
-const hideElement = (element) => {
-  element.classList.add("hidden");
+// Data creation
+
+const createCharacterData = () => {
+  characterData = new CharacterDataModel(initialCharacterData);
+};
+
+const createAllObjectsData = () => {
+  createCharacterData();
+};
+
+// Objects rendering
+
+const renderCharacter = () => {};
+
+const renderAllObjects = () => {
+  renderCharacter();
+};
+
+// Main functions
+
+const initGame = () => {
+  gameState.isStarted = true;
 };
 
 // Event handlers
@@ -133,20 +313,12 @@ const handleLoginInput = (evt) => {
 };
 
 const handleIntroVideoEnded = () => {
-  hideElement(introVideoElement);
-  showElement(playgroundElement);
-  showElement(statePanelElement);
+  hideIntroVideo();
 };
 
 const handleIntroVideoCloseKeyDown = (evt) => {
   if (evt.code !== Key.SPACE) return;
-
-  introVideoElement.pause();
-  introVideoElement.currentTime = 0;
-
-  hideElement(introVideoElement);
-  showElement(playgroundElement);
-  showElement(statePanelElement);
+  hideIntroVideo();
 };
 
 const handleStartGameButtonClick = () => {
