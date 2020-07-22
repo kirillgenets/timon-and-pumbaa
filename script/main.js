@@ -1,7 +1,10 @@
 // Constants
 
-const RIGHT_DIRECTION = "right";
-const LEFT_DIRECTION = "left";
+const Direction = {
+  RIGHT: "right",
+  LEFT: "left",
+  NONE: "none",
+};
 
 const SpriteData = {
   CHARACTER: {
@@ -112,18 +115,14 @@ const initialGameState = {
 const initialCharacterData = {
   width: 160,
   height: 100,
-  sprite: SpriteData.CHARACTER,
   speed: 1.5,
-  direction: RIGHT_DIRECTION,
+  direction: Direction.NONE,
   position: {
     x: 0,
     y: 100,
   },
-  backgroundPosition: 0,
-};
-
-const initialSpritesData = {
-  position: 0,
+  template: document.querySelector("#character"),
+  sprite: { data: SpriteData.CHARACTER.standing, position: 0 },
 };
 
 // Utils
@@ -149,22 +148,14 @@ class GameStateDataModel {
 }
 
 class CharacterDataModel {
-  constructor({
-    width,
-    height,
-    spriteData,
-    speed,
-    direction,
-    position,
-    template,
-  }) {
+  constructor({ width, height, speed, direction, position, template, sprite }) {
     this.width = width;
     this.height = height;
-    this.spriteData = spriteData;
     this.speed = speed;
     this.direction = direction;
     this.position = position;
     this.template = template;
+    this.sprite = sprite;
   }
 }
 
@@ -290,7 +281,34 @@ const createAllObjectsData = () => {
 
 // Objects rendering
 
-const renderCharacter = () => {};
+const renderCharacter = () => {
+  const moveCharacter = () => {
+    if (!gameState.isStarted) return;
+
+    switch (characterData.direction) {
+      case Direction.RIGHT:
+        characterData.position.x += characterData.speed;
+        characterData.sprite.data = SpriteData.CHARACTER.running;
+        break;
+      case Direction.LEFT:
+        characterData.position.x -= characterData.speed;
+        characterData.sprite.data = SpriteData.CHARACTER.running;
+        break;
+      case Direction.NONE:
+        characterData.sprite.data = SpriteData.CHARACTER.standing;
+        break;
+    }
+
+    characterInstance.move(characterData.position);
+  };
+
+  let spriteInstance = new AnimationSprite({
+    position: characterData.sprite.position,
+    ...characterData.sprite.data,
+  });
+  const characterInstance = new AnimatedGameObjectView(characterData);
+  playgroundElement.append(characterInstance.render());
+};
 
 const renderAllObjects = () => {
   renderCharacter();
