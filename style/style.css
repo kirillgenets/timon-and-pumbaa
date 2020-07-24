@@ -143,10 +143,11 @@ body {
 }
 
 .character {
-  width: 160px;
+  width: 165px;
   height: 100px;
 
   background-image: url("../media/img/sprites/pumba-standing.png");
+  background-position: 0px center;
 }
 
 /* Классы-скрыватели */

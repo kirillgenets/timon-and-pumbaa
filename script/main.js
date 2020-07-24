@@ -10,83 +10,19 @@ const SpriteData = {
   CHARACTER: {
     standing: {
       url: "media/img/sprites/pumba-standing.png",
-      framesWidth: [
-        124,
-        126,
-        126,
-        123,
-        123,
-        123,
-        124,
-        123,
-        121,
-        139,
-        157,
-        160,
-        156,
-        156,
-        152,
-      ],
+      framesWidth: 165,
     },
     running: {
       url: "media/img/sprites/pumba-running.png",
-      framesWidth: [
-        110,
-        111,
-        113,
-        124,
-        122,
-        118,
-        118,
-        120,
-        116,
-        120,
-        122,
-        125,
-        129,
-        120,
-        124,
-        127,
-      ],
+      framesWidth: 130,
     },
     jumping: {
       url: "media/img/sprites/pumba-jumping.png",
-      framesWidth: [
-        86,
-        88,
-        90,
-        81,
-        117,
-        117,
-        119,
-        117,
-        110,
-        93,
-        88,
-        95,
-        93,
-        89,
-        92,
-      ],
+      framesWidth: 100,
     },
     dying: {
       url: "media/img/sprites/pumba-dying.png",
-      framesWidth: [
-        103,
-        103,
-        114,
-        119,
-        106,
-        112,
-        113,
-        109,
-        103,
-        104,
-        114,
-        120,
-        105,
-        112,
-      ],
+      framesWidth: 120,
     },
   },
   HYENA: {
@@ -103,6 +39,9 @@ const SpriteData = {
 
 const Key = {
   SPACE: "Space",
+  ARROW_UP: "ArrowUp",
+  ARROW_LEFT: "ArrowLeft",
+  ARROW_RIGHT: "ArrowRight",
 };
 
 // Initial data
@@ -138,6 +77,8 @@ const hideElement = (element) => {
 const getElementFromTemplate = (template) =>
   template.content.querySelector("*").cloneNode(true);
 
+const areObjectsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
 // Data models
 
 class GameStateDataModel {
@@ -166,26 +107,14 @@ class AnimationSprite {
     this._url = url;
     this._framesWidth = framesWidth;
     this._position = position;
-
-    this._pointer = 0;
-  }
-
-  _updatePosition() {
-    if (Array.isArray(this._framesWidth)) {
-      this._position += this._framesWidth[this._pointer];
-      this._pointer++;
-
-      return;
-    }
-
-    this._position += this._framesWidth;
   }
 
   animate(element) {
-    this._updatePosition();
-
+    element.style.width = `${this._framesWidth}px`;
     element.style.backgroundImage = `url("${this._url}")`;
     element.style.backgroundPosition = `${this._position}px`;
+
+    this._position += this._framesWidth;
   }
 }
 
@@ -235,7 +164,9 @@ class AnimatedGameObjectView extends GameObjectView {
     this._element.style.left = `${this._position.x}px`;
     this._element.style.bottom = `${this._position.y}px`;
 
-    sprite.animate(this._element);
+    requestAnimationFrame(() => {
+      sprite.animate(this._element);
+    });
   }
 }
 
@@ -282,8 +213,26 @@ const createAllObjectsData = () => {
 // Objects rendering
 
 const renderCharacter = () => {
+  const handleCharacterKeyDown = (evt) => {
+    switch (evt.code) {
+      case Key.ARROW_RIGHT:
+        characterData.direction = Direction.RIGHT;
+        break;
+      case Key.ARROW_LEFT:
+        characterData.direction = Direction.LEFT;
+        break;
+    }
+  };
+
+  const handleCharacterKeyUp = (evt) => {
+    if (evt.code === Key.ARROW_LEFT || evt.code === Key.ARROW_RIGHT) {
+      characterData.direction = Direction.NONE;
+    }
+  };
+
   const moveCharacter = () => {
     if (!gameState.isStarted) return;
+    const previousSprite = characterData.sprite.data;
 
     switch (characterData.direction) {
       case Direction.RIGHT:
@@ -295,11 +244,22 @@ const renderCharacter = () => {
         characterData.sprite.data = SpriteData.CHARACTER.running;
         break;
       case Direction.NONE:
+      default:
         characterData.sprite.data = SpriteData.CHARACTER.standing;
         break;
     }
 
-    characterInstance.move(characterData.position);
+    if (!areObjectsEqual(characterData.sprite.data, previousSprite)) {
+      console.log("huy");
+      spriteInstance = new AnimationSprite({
+        position: 0,
+        ...characterData.sprite.data,
+      });
+    }
+
+    characterInstance.move(characterData.position, spriteInstance);
+
+    requestAnimationFrame(moveCharacter);
   };
 
   let spriteInstance = new AnimationSprite({
@@ -308,6 +268,11 @@ const renderCharacter = () => {
   });
   const characterInstance = new AnimatedGameObjectView(characterData);
   playgroundElement.append(characterInstance.render());
+
+  document.addEventListener("keydown", handleCharacterKeyDown);
+  document.addEventListener("keyup", handleCharacterKeyUp);
+
+  requestAnimationFrame(moveCharacter);
 };
 
 const renderAllObjects = () => {
@@ -318,6 +283,9 @@ const renderAllObjects = () => {
 
 const initGame = () => {
   gameState.isStarted = true;
+
+  createAllObjectsData();
+  renderAllObjects();
 };
 
 // Event handlers
@@ -332,11 +300,14 @@ const handleLoginInput = (evt) => {
 
 const handleIntroVideoEnded = () => {
   hideIntroVideo();
+  initGame();
 };
 
 const handleIntroVideoCloseKeyDown = (evt) => {
   if (evt.code !== Key.SPACE) return;
+
   hideIntroVideo();
+  initGame();
 };
 
 const handleStartGameButtonClick = () => {
