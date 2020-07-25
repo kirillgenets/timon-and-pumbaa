@@ -54,7 +54,7 @@ const initialGameState = {
 const initialCharacterData = {
   width: 160,
   height: 100,
-  speed: 1.5,
+  speed: 3,
   direction: Direction.NONE,
   position: {
     x: 0,
@@ -97,6 +97,12 @@ class CharacterDataModel {
     this.position = position;
     this.template = template;
     this.sprite = sprite;
+  }
+}
+
+class BackgroundDataModel {
+  constructor({ position }) {
+    this.position = position;
   }
 }
 
@@ -230,10 +236,7 @@ const renderCharacter = () => {
     }
   };
 
-  const moveCharacter = () => {
-    if (!gameState.isStarted) return;
-    const previousSprite = characterData.sprite.data;
-
+  const updateCharacterPosition = () => {
     switch (characterData.direction) {
       case Direction.RIGHT:
         characterData.position.x += characterData.speed;
@@ -249,15 +252,41 @@ const renderCharacter = () => {
         break;
     }
 
+    if (characterData.position.x < 0) {
+      characterData.position.x = 0;
+    }
+
+    if (
+      characterData.position.x + characterData.width >
+      playgroundElement.clientWidth
+    ) {
+      characterData.position.x =
+        playgroundElement.clientWidth - characterData.width;
+    }
+  };
+
+  const getSpriteInstance = (previousSprite) => {
     if (!areObjectsEqual(characterData.sprite.data, previousSprite)) {
-      console.log("huy");
       spriteInstance = new AnimationSprite({
         position: 0,
         ...characterData.sprite.data,
       });
     }
 
-    characterInstance.move(characterData.position, spriteInstance);
+    return spriteInstance;
+  };
+
+  const moveCharacter = () => {
+    if (!gameState.isStarted) return;
+
+    const previousSprite = characterData.sprite.data;
+
+    updateCharacterPosition();
+
+    characterInstance.move(
+      characterData.position,
+      getSpriteInstance(previousSprite)
+    );
 
     requestAnimationFrame(moveCharacter);
   };

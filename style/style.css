@@ -94,6 +94,8 @@ body {
 
   background-image: url("../media/img/game-bg.jpg");
   background-size: contain;
+
+  overflow: hidden;
 }
 
 /* Модальное окно */
