@@ -62,6 +62,13 @@ const initialCharacterData = {
   },
   template: document.querySelector("#character"),
   sprite: { data: SpriteData.CHARACTER.standing, position: 0 },
+  isMoving: false,
+};
+
+const initialBackgroundData = {
+  position: 0,
+  speed: 3,
+  url: "media/img/game-bg.jpg",
 };
 
 // Utils
@@ -89,7 +96,16 @@ class GameStateDataModel {
 }
 
 class CharacterDataModel {
-  constructor({ width, height, speed, direction, position, template, sprite }) {
+  constructor({
+    width,
+    height,
+    speed,
+    direction,
+    position,
+    template,
+    sprite,
+    isMoving,
+  }) {
     this.width = width;
     this.height = height;
     this.speed = speed;
@@ -97,16 +113,35 @@ class CharacterDataModel {
     this.position = position;
     this.template = template;
     this.sprite = sprite;
+    this.isMoving = isMoving;
   }
 }
 
 class BackgroundDataModel {
-  constructor({ position }) {
+  constructor({ position, speed, url }) {
     this.position = position;
+    this.speed = speed;
+    this.url = url;
   }
 }
 
 // Object views
+
+class BackgroundView {
+  constructor({ position, element }) {
+    this._position = position;
+    this._element = element;
+  }
+
+  setImage(url) {
+    this._element.style.backgroundImage = `url("${url}")`;
+  }
+
+  move(position) {
+    this._position = position;
+    this._element.style.backgroundPosition = `${this._position}px`;
+  }
+}
 
 class AnimationSprite {
   constructor({ url, framesWidth, position }) {
@@ -194,6 +229,7 @@ const statePanelElement = gameWrapperElement.querySelector(".panel");
 const gameState = new GameStateDataModel(initialGameState);
 
 let characterData = {};
+let backgroundData = {};
 
 // Game functions
 
@@ -212,7 +248,12 @@ const createCharacterData = () => {
   characterData = new CharacterDataModel(initialCharacterData);
 };
 
+const createBackgroundData = () => {
+  backgroundData = new BackgroundDataModel(initialBackgroundData);
+};
+
 const createAllObjectsData = () => {
+  createBackgroundData();
   createCharacterData();
 };
 
@@ -223,9 +264,11 @@ const renderCharacter = () => {
     switch (evt.code) {
       case Key.ARROW_RIGHT:
         characterData.direction = Direction.RIGHT;
+        characterData.isMoving = true;
         break;
       case Key.ARROW_LEFT:
         characterData.direction = Direction.LEFT;
+        characterData.isMoving = true;
         break;
     }
   };
@@ -233,6 +276,7 @@ const renderCharacter = () => {
   const handleCharacterKeyUp = (evt) => {
     if (evt.code === Key.ARROW_LEFT || evt.code === Key.ARROW_RIGHT) {
       characterData.direction = Direction.NONE;
+      characterData.isMoving = false;
     }
   };
 
@@ -252,16 +296,17 @@ const renderCharacter = () => {
         break;
     }
 
+    const isCharacterInMiddle =
+      characterData.position.x + characterData.width >
+      playgroundElement.clientWidth / 2 + characterData.width / 2;
+
     if (characterData.position.x < 0) {
       characterData.position.x = 0;
     }
 
-    if (
-      characterData.position.x + characterData.width >
-      playgroundElement.clientWidth
-    ) {
+    if (isCharacterInMiddle) {
       characterData.position.x =
-        playgroundElement.clientWidth - characterData.width;
+        playgroundElement.clientWidth / 2 - characterData.width / 2;
     }
   };
 
@@ -295,6 +340,7 @@ const renderCharacter = () => {
     position: characterData.sprite.position,
     ...characterData.sprite.data,
   });
+
   const characterInstance = new AnimatedGameObjectView(characterData);
   playgroundElement.append(characterInstance.render());
 
@@ -304,8 +350,40 @@ const renderCharacter = () => {
   requestAnimationFrame(moveCharacter);
 };
 
+const renderBackground = () => {
+  const moveBackground = () => {
+    if (!gameState.isStarted) return;
+
+    const {
+      position: { x: characterPosition },
+      width: characterWidth,
+      isMoving: isCharacterMoving,
+    } = characterData;
+
+    const shouldBackgroundMove =
+      isCharacterMoving &&
+      characterData.position.x + characterData.width ===
+        playgroundElement.clientWidth / 2 + characterData.width / 2;
+
+    backgroundData.position -= shouldBackgroundMove ? backgroundData.speed : 0;
+    backgroundInstance.move(backgroundData.position);
+
+    requestAnimationFrame(moveBackground);
+  };
+
+  const backgroundInstance = new BackgroundView({
+    position: backgroundData.position,
+    element: playgroundElement,
+  });
+
+  backgroundInstance.setImage(backgroundData.url);
+
+  requestAnimationFrame(moveBackground);
+};
+
 const renderAllObjects = () => {
   renderCharacter();
+  renderBackground();
 };
 
 // Main functions
