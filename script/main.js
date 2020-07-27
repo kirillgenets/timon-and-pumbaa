@@ -71,6 +71,12 @@ const initialBackgroundData = {
   url: "media/img/game-bg.jpg",
 };
 
+const initialTimerData = {
+  startTime: null,
+  value: "00:00",
+  template: document.querySelector("#counter"),
+};
+
 // Utils
 
 const showElement = (element) => {
@@ -92,6 +98,14 @@ class GameStateDataModel {
   constructor({ isStarted, stats }) {
     this.isStarted = isStarted;
     this.stats = stats;
+  }
+}
+
+class TimerDataModel {
+  constructor({ startTime, value, template }) {
+    this.startTime = startTime;
+    this.value = value;
+    this.template = template;
   }
 }
 
@@ -159,12 +173,25 @@ class AnimationSprite {
   }
 }
 
-class GameObjectView {
+class DestroyableObject {
+  constructor() {
+    this._element = null;
+  }
+
+  destroy() {
+    if (!this._element) return;
+
+    this._element.remove();
+    this._element = null;
+  }
+}
+
+class GameObjectView extends DestroyableObject {
   constructor({ position, template }) {
+    super();
+
     this._position = position;
     this._template = template;
-
-    this._element = null;
   }
 
   render() {
@@ -175,13 +202,6 @@ class GameObjectView {
     this._element.style.bottom = `${y}px`;
 
     return this._element;
-  }
-
-  destroy() {
-    if (!this._element) return;
-
-    this._element.remove();
-    this._element = null;
   }
 
   move(position) {
@@ -211,6 +231,24 @@ class AnimatedGameObjectView extends GameObjectView {
   }
 }
 
+class CounterView extends DestroyableObject {
+  constructor({ value, template }) {
+    this._value = value;
+    this._template = template;
+  }
+
+  render() {
+    this._element = getElementFromTemplate(this._template);
+    this._element.textContent = this._value;
+
+    return this._element;
+  }
+
+  update(value) {
+    this._element.textContent = value;
+  }
+}
+
 // DOM-elements
 
 const gameWrapperElement = document.querySelector(".game");
@@ -230,6 +268,7 @@ const gameState = new GameStateDataModel(initialGameState);
 
 let characterData = {};
 let backgroundData = {};
+let timerData = {};
 
 // Game functions
 
@@ -252,9 +291,17 @@ const createBackgroundData = () => {
   backgroundData = new BackgroundDataModel(initialBackgroundData);
 };
 
+const createTimerData = () => {
+  timerData = new TimerDataModel({
+    ...initialTimerData,
+    startTime: Date.now(),
+  });
+};
+
 const createAllObjectsData = () => {
   createBackgroundData();
   createCharacterData();
+  createTimerData();
 };
 
 // Objects rendering
@@ -379,6 +426,10 @@ const renderBackground = () => {
   backgroundInstance.setImage(backgroundData.url);
 
   requestAnimationFrame(moveBackground);
+};
+
+const renderTimer = () => {
+  const timerInstance = new CounterView(timerData);
 };
 
 const renderAllObjects = () => {
