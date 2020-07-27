@@ -362,8 +362,8 @@ const renderBackground = () => {
 
     const shouldBackgroundMove =
       isCharacterMoving &&
-      characterData.position.x + characterData.width ===
-        playgroundElement.clientWidth / 2 + characterData.width / 2;
+      characterPosition + characterWidth ===
+        playgroundElement.clientWidth / 2 + characterWidth / 2;
 
     backgroundData.position -= shouldBackgroundMove ? backgroundData.speed : 0;
     backgroundInstance.move(backgroundData.position);
