@@ -39,6 +39,7 @@ const SpriteData = {
 
 const Key = {
   SPACE: "Space",
+  ESC: "Escape",
   ARROW_UP: "ArrowUp",
   ARROW_LEFT: "ArrowLeft",
   ARROW_RIGHT: "ArrowRight",
@@ -48,6 +49,7 @@ const Key = {
 
 const initialGameState = {
   isStarted: false,
+  isPaused: false,
   stats: [],
 };
 
@@ -73,6 +75,7 @@ const initialBackgroundData = {
 
 const initialTimerData = {
   startTime: null,
+  pauseTime: null,
   value: "00:00",
   template: document.querySelector("#counter"),
 };
@@ -95,15 +98,18 @@ const areObjectsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 // Data models
 
 class GameStateDataModel {
-  constructor({ isStarted, stats }) {
+  constructor({ isStarted, stats, isPaused }) {
     this.isStarted = isStarted;
+    this.isPaused = isPaused;
     this.stats = stats;
   }
 }
 
 class TimerDataModel {
-  constructor({ startTime, value, template }) {
+  constructor({ startTime, value, template, pauseTime, isPaused }) {
     this.startTime = startTime;
+    this.pauseTime = pauseTime;
+    this.isPaused = isPaused;
     this.value = value;
     this.template = template;
   }
@@ -285,6 +291,48 @@ const hideIntroVideo = () => {
   showElement(statePanelElement);
 };
 
+// Event handlers
+
+const handleLoginInput = (evt) => {
+  if (evt.target.value) {
+    startGameButton.disabled = false;
+  } else {
+    startGameButton.disabled = true;
+  }
+};
+
+const handleIntroVideoEnded = () => {
+  hideIntroVideo();
+  initGame();
+};
+
+const handleIntroVideoCloseKeyDown = (evt) => {
+  if (evt.code !== Key.SPACE || gameState.isStarted) return;
+
+  hideIntroVideo();
+  initGame();
+};
+
+const handleStartGameButtonClick = () => {
+  hideElement(startModalElement);
+
+  introVideoElement.addEventListener("ended", handleIntroVideoEnded);
+  document.addEventListener("keydown", handleIntroVideoCloseKeyDown);
+
+  showElement(introVideoElement);
+  introVideoElement.play();
+};
+
+const handlePauseKeyDown = (evt) => {
+  if (evt.code !== Key.ESC) return;
+
+  timerData.startTime = timerData.pauseTime
+    ? timerData.startTime + (Date.now() - timerData.pauseTime)
+    : timerData.startTime;
+  timerData.pauseTime = timerData.pauseTime ? null : Date.now();
+  gameState.isPaused = !gameState.isPaused;
+};
+
 // Data creation
 
 const createCharacterData = () => {
@@ -375,14 +423,16 @@ const renderCharacter = () => {
   const moveCharacter = () => {
     if (!gameState.isStarted) return;
 
-    const previousSprite = characterData.sprite.data;
+    if (!gameState.isPaused) {
+      const previousSprite = characterData.sprite.data;
 
-    updateCharacterPosition();
+      updateCharacterPosition();
 
-    characterInstance.move(
-      characterData.position,
-      getSpriteInstance(previousSprite)
-    );
+      characterInstance.move(
+        characterData.position,
+        getSpriteInstance(previousSprite)
+      );
+    }
 
     requestAnimationFrame(moveCharacter);
   };
@@ -405,19 +455,23 @@ const renderBackground = () => {
   const moveBackground = () => {
     if (!gameState.isStarted) return;
 
-    const {
-      position: { x: characterPosition },
-      width: characterWidth,
-      isMoving: isCharacterMoving,
-    } = characterData;
+    if (!gameState.isPaused) {
+      const {
+        position: { x: characterPosition },
+        width: characterWidth,
+        isMoving: isCharacterMoving,
+      } = characterData;
 
-    const shouldBackgroundMove =
-      isCharacterMoving &&
-      characterPosition + characterWidth ===
-        playgroundElement.clientWidth / 2 + characterWidth / 2;
+      const shouldBackgroundMove =
+        isCharacterMoving &&
+        characterPosition + characterWidth ===
+          playgroundElement.clientWidth / 2 + characterWidth / 2;
 
-    backgroundData.position -= shouldBackgroundMove ? backgroundData.speed : 0;
-    backgroundInstance.move(backgroundData.position);
+      backgroundData.position -= shouldBackgroundMove
+        ? backgroundData.speed
+        : 0;
+      backgroundInstance.move(backgroundData.position);
+    }
 
     requestAnimationFrame(moveBackground);
   };
@@ -436,15 +490,17 @@ const renderTimer = () => {
   const updateTimer = () => {
     if (!gameState.isStarted) return;
 
-    const currentTime = (Date.now() - timerData.startTime) / 1000;
-    const minutes = Math.floor(currentTime / 60);
-    const seconds = Math.floor(currentTime % 60);
-    const newValue = `${minutes > 9 ? minutes : `0${minutes}`}:${
-      seconds > 9 ? seconds : `0${seconds}`
-    }`;
+    if (!gameState.isPaused) {
+      const currentTime = (Date.now() - timerData.startTime) / 1000;
+      const minutes = Math.floor(currentTime / 60);
+      const seconds = Math.floor(currentTime % 60);
+      const newValue = `${minutes > 9 ? minutes : `0${minutes}`}:${
+        seconds > 9 ? seconds : `0${seconds}`
+      }`;
 
-    timerData.value = newValue;
-    timerInstance.update(timerData.value);
+      timerData.value = newValue;
+      timerInstance.update(timerData.value);
+    }
 
     requestAnimationFrame(updateTimer);
   };
@@ -468,38 +524,8 @@ const initGame = () => {
 
   createAllObjectsData();
   renderAllObjects();
-};
 
-// Event handlers
-
-const handleLoginInput = (evt) => {
-  if (evt.target.value) {
-    startGameButton.disabled = false;
-  } else {
-    startGameButton.disabled = true;
-  }
-};
-
-const handleIntroVideoEnded = () => {
-  hideIntroVideo();
-  initGame();
-};
-
-const handleIntroVideoCloseKeyDown = (evt) => {
-  if (evt.code !== Key.SPACE) return;
-
-  hideIntroVideo();
-  initGame();
-};
-
-const handleStartGameButtonClick = () => {
-  hideElement(startModalElement);
-
-  introVideoElement.addEventListener("ended", handleIntroVideoEnded);
-  document.addEventListener("keydown", handleIntroVideoCloseKeyDown);
-
-  showElement(introVideoElement);
-  introVideoElement.play();
+  document.addEventListener("keydown", handlePauseKeyDown);
 };
 
 // Event listeners
