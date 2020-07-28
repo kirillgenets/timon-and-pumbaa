@@ -233,6 +233,7 @@ class AnimatedGameObjectView extends GameObjectView {
 
 class CounterView extends DestroyableObject {
   constructor({ value, template }) {
+    super();
     this._value = value;
     this._template = template;
   }
@@ -261,6 +262,9 @@ const introVideoElement = gameWrapperElement.querySelector(".intro-video");
 
 const playgroundElement = gameWrapperElement.querySelector(".playground");
 const statePanelElement = gameWrapperElement.querySelector(".panel");
+const timeCounterWrapper = gameWrapperElement.querySelector(
+  ".time-counter-wrapper"
+);
 
 // Data initialization
 
@@ -429,12 +433,32 @@ const renderBackground = () => {
 };
 
 const renderTimer = () => {
+  const updateTimer = () => {
+    if (!gameState.isStarted) return;
+
+    const currentTime = (Date.now() - timerData.startTime) / 1000;
+    const minutes = Math.floor(currentTime / 60);
+    const seconds = Math.floor(currentTime % 60);
+    const newValue = `${minutes > 9 ? minutes : `0${minutes}`}:${
+      seconds > 9 ? seconds : `0${seconds}`
+    }`;
+
+    timerData.value = newValue;
+    timerInstance.update(timerData.value);
+
+    requestAnimationFrame(updateTimer);
+  };
+
   const timerInstance = new CounterView(timerData);
+  timeCounterWrapper.append(timerInstance.render());
+
+  requestAnimationFrame(updateTimer);
 };
 
 const renderAllObjects = () => {
   renderCharacter();
   renderBackground();
+  renderTimer();
 };
 
 // Main functions
