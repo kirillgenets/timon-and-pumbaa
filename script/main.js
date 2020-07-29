@@ -94,6 +94,11 @@ const initialCaterpillarData = {
   template: document.querySelector("#caterpillar"),
 };
 
+const initialScoreCounterData = {
+  value: 0,
+  template: document.querySelector("#counter"),
+};
+
 // Utils
 
 const showElement = (element) => {
@@ -109,14 +114,12 @@ const getElementFromTemplate = (template) =>
 
 const areObjectsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-const isObjectInMiddleOfWrapper = (wrapper, obj) => {
-  const {
-    position: { x },
-    width,
-  } = obj;
+const isObjectInMiddleOfWrapper = (wrapper, obj) =>
+  obj.position.x + obj.width === wrapper.clientWidth / 2 + obj.width / 2;
 
-  return x + width === wrapper.clientWidth / 2 + width / 2;
-};
+const areObjectsIntersected = (a, b) =>
+  a.position.x <= b.position.x + b.width &&
+  a.position.x + a.width >= b.position.x;
 
 // Utils
 
@@ -150,6 +153,13 @@ class TimerDataModel {
     this.startTime = startTime;
     this.pauseTime = pauseTime;
     this.isPaused = isPaused;
+    this.value = value;
+    this.template = template;
+  }
+}
+
+class ScoreCounterDataModel {
+  constructor({ value, template }) {
     this.value = value;
     this.template = template;
   }
@@ -320,6 +330,9 @@ const statePanelElement = gameWrapperElement.querySelector(".panel");
 const timeCounterWrapper = gameWrapperElement.querySelector(
   ".time-counter-wrapper"
 );
+const scoreCounterWrapper = gameWrapperElement.querySelector(
+  ".caterpillar-counter-wrapper"
+);
 
 // Data initialization
 
@@ -328,6 +341,7 @@ const gameState = new GameStateDataModel(initialGameState);
 let characterData = {};
 let backgroundData = {};
 let timerData = {};
+let scoreCounterData = {};
 let caterpillarsData = [];
 
 // Game functions
@@ -418,11 +432,16 @@ const createCaterpillarsData = () => {
   }
 };
 
+const createScoreCounterData = () => {
+  scoreCounterData = new ScoreCounterDataModel(initialScoreCounterData);
+};
+
 const createAllObjectsData = () => {
   createBackgroundData();
   createCharacterData();
   createTimerData();
   createCaterpillarsData();
+  createScoreCounterData();
 };
 
 // Objects rendering
@@ -574,17 +593,30 @@ const renderTimer = () => {
 };
 
 const renderCaterpillars = () => {
-  const renderCaterpillar = (data) => {
+  const renderCaterpillar = (data, index) => {
+    const removeCaterpillar = () => {
+      caterpillarInstance.destroy();
+      caterpillarsData.splice(index, 1);
+    };
+
     const moveCaterpillar = () => {
       if (!gameState.isStarted) return;
 
-      const shouldCaterpillarMove =
-        characterData.isMoving &&
-        isObjectInMiddleOfWrapper(playgroundElement, characterData);
+      if (!gameState.isPaused) {
+        const shouldCaterpillarMove =
+          characterData.isMoving &&
+          isObjectInMiddleOfWrapper(playgroundElement, characterData);
 
-      if (shouldCaterpillarMove) {
-        data.position.x -= backgroundData.speed;
-        caterpillarInstance.move(data.position);
+        if (shouldCaterpillarMove) {
+          data.position.x -= backgroundData.speed;
+          caterpillarInstance.move(data.position);
+        }
+
+        if (areObjectsIntersected(data, characterData)) {
+          removeCaterpillar();
+          scoreCounterData.value++;
+          return;
+        }
       }
 
       requestAnimationFrame(moveCaterpillar);
@@ -599,11 +631,29 @@ const renderCaterpillars = () => {
   caterpillarsData.forEach(renderCaterpillar);
 };
 
+const renderScoreCounter = () => {
+  const updateScoreCounter = () => {
+    if (!gameState.isStarted) return;
+
+    if (!gameState.isPaused) {
+      scoreCounterInstance.update(scoreCounterData.value);
+    }
+
+    requestAnimationFrame(updateScoreCounter);
+  };
+
+  const scoreCounterInstance = new CounterView(scoreCounterData);
+  scoreCounterWrapper.append(scoreCounterInstance.render());
+
+  requestAnimationFrame(updateScoreCounter);
+};
+
 const renderAllObjects = () => {
   renderCharacter();
   renderBackground();
   renderTimer();
   renderCaterpillars();
+  renderScoreCounter();
 };
 
 // Main functions
