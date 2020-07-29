@@ -1,5 +1,9 @@
 // Constants
 
+const MAX_CATERPILLARS_COUNT = 5;
+const MIN_CATERPILLARS_GAP = 100;
+const MAX_CATERPILLARS_GAP = 500;
+
 const Direction = {
   RIGHT: "right",
   LEFT: "left",
@@ -80,6 +84,16 @@ const initialTimerData = {
   template: document.querySelector("#counter"),
 };
 
+const initialCaterpillarData = {
+  width: 62,
+  height: 50,
+  position: {
+    x: 0,
+    y: 100,
+  },
+  template: document.querySelector("#caterpillar"),
+};
+
 // Utils
 
 const showElement = (element) => {
@@ -94,6 +108,23 @@ const getElementFromTemplate = (template) =>
   template.content.querySelector("*").cloneNode(true);
 
 const areObjectsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+// Utils
+
+class ObjectPositionIterator {
+  constructor({ initialPosition, minGap, maxGap }) {
+    this._minGap = minGap;
+    this._maxGap = maxGap;
+    this._position = initialPosition;
+  }
+
+  next() {
+    this._position +=
+      Math.random() * (this._maxGap - this._minGap) + this._minGap;
+
+    return this._position;
+  }
+}
 
 // Data models
 
@@ -134,6 +165,15 @@ class CharacterDataModel {
     this.template = template;
     this.sprite = sprite;
     this.isMoving = isMoving;
+  }
+}
+
+class CaterpillarDataModel {
+  constructor({ width, height, position, template }) {
+    this.width = width;
+    this.height = height;
+    this.position = position;
+    this.template = template;
   }
 }
 
@@ -279,6 +319,7 @@ const gameState = new GameStateDataModel(initialGameState);
 let characterData = {};
 let backgroundData = {};
 let timerData = {};
+let caterpillarsData = [];
 
 // Game functions
 
@@ -350,10 +391,30 @@ const createTimerData = () => {
   });
 };
 
+const createCaterpillarsData = () => {
+  const positionIterator = new ObjectPositionIterator({
+    initialPosition: initialCaterpillarData.position.x,
+    minGap: MIN_CATERPILLARS_GAP,
+    maxGap: MAX_CATERPILLARS_GAP,
+  });
+
+  for (let i = 0; i < MAX_CATERPILLARS_COUNT; i++) {
+    caterpillarsData.push({
+      ...initialCaterpillarData,
+      position: {
+        x: positionIterator.next(),
+        y: initialCaterpillarData.position.y,
+      },
+    });
+  }
+};
+
 const createAllObjectsData = () => {
   createBackgroundData();
   createCharacterData();
   createTimerData();
+  createCaterpillarsData();
+  console.log(caterpillarsData);
 };
 
 // Objects rendering
