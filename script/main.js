@@ -414,9 +414,9 @@ const createTimerData = () => {
   });
 };
 
-const createCaterpillarsData = () => {
+const createCaterpillarsData = (initialPosition) => {
   const positionIterator = new ObjectPositionIterator({
-    initialPosition: initialCaterpillarData.position.x,
+    initialPosition,
     minGap: MIN_CATERPILLARS_GAP,
     maxGap: MAX_CATERPILLARS_GAP,
   });
@@ -440,7 +440,7 @@ const createAllObjectsData = () => {
   createBackgroundData();
   createCharacterData();
   createTimerData();
-  createCaterpillarsData();
+  createCaterpillarsData(initialCaterpillarData.position.x);
   createScoreCounterData();
 };
 
@@ -593,39 +593,51 @@ const renderTimer = () => {
 };
 
 const renderCaterpillars = () => {
-  const renderCaterpillar = (data, index) => {
-    const removeCaterpillar = () => {
-      caterpillarInstance.destroy();
-      caterpillarsData.splice(index, 1);
-    };
+  const regenerateCaterpillars = () => {
+    if (caterpillarsData.length > 0) return;
 
-    const moveCaterpillar = () => {
-      if (!gameState.isStarted) return;
+    createCaterpillarsData(playgroundElement.clientWidth);
+    renderCaterpillars();
+  };
 
-      if (!gameState.isPaused) {
-        const shouldCaterpillarMove =
-          characterData.isMoving &&
-          isObjectInMiddleOfWrapper(playgroundElement, characterData);
+  const removeCaterpillar = (instance, data) => {
+    const index = caterpillarsData.findIndex((originalData) =>
+      areObjectsEqual(originalData, data)
+    );
 
-        if (shouldCaterpillarMove) {
-          data.position.x -= backgroundData.speed;
-          caterpillarInstance.move(data.position);
-        }
+    instance.destroy();
+    caterpillarsData.splice(index, 1);
+  };
 
-        if (areObjectsIntersected(data, characterData)) {
-          removeCaterpillar();
-          scoreCounterData.value++;
-          return;
-        }
+  const moveCaterpillar = (data, index, instance) => () => {
+    if (!gameState.isStarted) return;
+
+    if (!gameState.isPaused) {
+      const shouldCaterpillarMove =
+        characterData.isMoving &&
+        isObjectInMiddleOfWrapper(playgroundElement, characterData);
+
+      if (shouldCaterpillarMove) {
+        data.position.x -= backgroundData.speed;
+        instance.move(data.position);
       }
 
-      requestAnimationFrame(moveCaterpillar);
-    };
+      if (areObjectsIntersected(data, characterData)) {
+        removeCaterpillar(instance, data);
+        regenerateCaterpillars();
+        scoreCounterData.value++;
+        return;
+      }
+    }
 
+    requestAnimationFrame(moveCaterpillar(data, index, instance));
+  };
+
+  const renderCaterpillar = (data, index) => {
     const caterpillarInstance = new GameObjectView(data);
     playgroundElement.append(caterpillarInstance.render());
 
-    requestAnimationFrame(moveCaterpillar);
+    requestAnimationFrame(moveCaterpillar(data, index, caterpillarInstance));
   };
 
   caterpillarsData.forEach(renderCaterpillar);
