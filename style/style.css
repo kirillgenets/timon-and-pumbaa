@@ -137,6 +137,7 @@ body {
 
 .object {
   position: absolute;
+  z-index: 0;
 }
 
 .caterpillar {
@@ -145,6 +146,8 @@ body {
 }
 
 .character {
+  z-index: 1;
+
   width: 165px;
   height: 100px;
 

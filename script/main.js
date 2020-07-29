@@ -1,8 +1,8 @@
 // Constants
 
 const MAX_CATERPILLARS_COUNT = 5;
-const MIN_CATERPILLARS_GAP = 100;
-const MAX_CATERPILLARS_GAP = 500;
+const MIN_CATERPILLARS_GAP = 300;
+const MAX_CATERPILLARS_GAP = 800;
 
 const Direction = {
   RIGHT: "right",
@@ -108,6 +108,15 @@ const getElementFromTemplate = (template) =>
   template.content.querySelector("*").cloneNode(true);
 
 const areObjectsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+const isObjectInMiddleOfWrapper = (wrapper, obj) => {
+  const {
+    position: { x },
+    width,
+  } = obj;
+
+  return x + width === wrapper.clientWidth / 2 + width / 2;
+};
 
 // Utils
 
@@ -414,7 +423,6 @@ const createAllObjectsData = () => {
   createCharacterData();
   createTimerData();
   createCaterpillarsData();
-  console.log(caterpillarsData);
 };
 
 // Objects rendering
@@ -517,21 +525,14 @@ const renderBackground = () => {
     if (!gameState.isStarted) return;
 
     if (!gameState.isPaused) {
-      const {
-        position: { x: characterPosition },
-        width: characterWidth,
-        isMoving: isCharacterMoving,
-      } = characterData;
-
       const shouldBackgroundMove =
-        isCharacterMoving &&
-        characterPosition + characterWidth ===
-          playgroundElement.clientWidth / 2 + characterWidth / 2;
+        characterData.isMoving &&
+        isObjectInMiddleOfWrapper(playgroundElement, characterData);
 
-      backgroundData.position -= shouldBackgroundMove
-        ? backgroundData.speed
-        : 0;
-      backgroundInstance.move(backgroundData.position);
+      if (shouldBackgroundMove) {
+        backgroundData.position -= backgroundData.speed;
+        backgroundInstance.move(backgroundData.position);
+      }
     }
 
     requestAnimationFrame(moveBackground);
@@ -572,10 +573,37 @@ const renderTimer = () => {
   requestAnimationFrame(updateTimer);
 };
 
+const renderCaterpillars = () => {
+  const renderCaterpillar = (data) => {
+    const moveCaterpillar = () => {
+      if (!gameState.isStarted) return;
+
+      const shouldCaterpillarMove =
+        characterData.isMoving &&
+        isObjectInMiddleOfWrapper(playgroundElement, characterData);
+
+      if (shouldCaterpillarMove) {
+        data.position.x -= backgroundData.speed;
+        caterpillarInstance.move(data.position);
+      }
+
+      requestAnimationFrame(moveCaterpillar);
+    };
+
+    const caterpillarInstance = new GameObjectView(data);
+    playgroundElement.append(caterpillarInstance.render());
+
+    requestAnimationFrame(moveCaterpillar);
+  };
+
+  caterpillarsData.forEach(renderCaterpillar);
+};
+
 const renderAllObjects = () => {
   renderCharacter();
   renderBackground();
   renderTimer();
+  renderCaterpillars();
 };
 
 // Main functions
