@@ -94,6 +94,19 @@ const initialCaterpillarData = {
   template: document.querySelector("#caterpillar"),
 };
 
+const initialHyenaData = {
+  width: 157,
+  height: 100,
+  speed: 2,
+  direction: Direction.NONE,
+  position: {
+    x: 0,
+    y: 100,
+  },
+  template: document.querySelector("#hyena"),
+  sprite: { data: SpriteData.HYENA.running, position: 0 },
+};
+
 const initialScoreCounterData = {
   value: 0,
   template: document.querySelector("#counter"),
