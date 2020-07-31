@@ -4,6 +4,9 @@ const MAX_CATERPILLARS_COUNT = 5;
 const MIN_CATERPILLARS_GAP = 300;
 const MAX_CATERPILLARS_GAP = 800;
 const MAX_BACKGROUND_POSITION = -2000;
+const MAX_HYENAS_COUNT = 4;
+const MIN_HYENAS_GAP = 100;
+const MAX_HYENAS_GAP = 800;
 
 const Direction = {
   RIGHT: "right",
@@ -201,6 +204,18 @@ class CharacterDataModel {
   }
 }
 
+class HyenaDataModel {
+  constructor({ width, height, speed, direction, position, template, sprite }) {
+    this.width = width;
+    this.height = height;
+    this.speed = speed;
+    this.direction = direction;
+    this.position = position;
+    this.template = template;
+    this.sprite = sprite;
+  }
+}
+
 class CaterpillarDataModel {
   constructor({ width, height, position, template }) {
     this.width = width;
@@ -357,6 +372,7 @@ let backgroundData = {};
 let timerData = {};
 let scoreCounterData = {};
 let caterpillarsData = [];
+let hyenasData = [];
 
 // Game functions
 
@@ -452,6 +468,24 @@ const createCaterpillarsData = (initialPosition) => {
   }
 };
 
+const createHyenasData = () => {
+  const positionIterator = new ObjectPositionIterator({
+    initialPosition: playgroundElement.clientWidth,
+    minGap: MIN_HYENAS_GAP,
+    maxGap: MAX_HYENAS_GAP,
+  });
+
+  for (let i = 0; i < MAX_HYENAS_COUNT; i++) {
+    hyenasData.push({
+      ...initialHyenaData,
+      position: {
+        x: positionIterator.next(),
+        y: initialHyenaData.position.y,
+      },
+    });
+  }
+};
+
 const createScoreCounterData = () => {
   scoreCounterData = new ScoreCounterDataModel(initialScoreCounterData);
 };
@@ -462,6 +496,7 @@ const createAllObjectsData = () => {
   createTimerData();
   createCaterpillarsData(initialCaterpillarData.position.x);
   createScoreCounterData();
+  createHyenasData();
 };
 
 // Objects rendering
