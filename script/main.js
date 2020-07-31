@@ -3,6 +3,7 @@
 const MAX_CATERPILLARS_COUNT = 5;
 const MIN_CATERPILLARS_GAP = 300;
 const MAX_CATERPILLARS_GAP = 800;
+const MAX_BACKGROUND_POSITION = -2000;
 
 const Direction = {
   RIGHT: "right",
@@ -72,7 +73,7 @@ const initialCharacterData = {
 };
 
 const initialBackgroundData = {
-  position: 0,
+  position: -1,
   speed: 3,
   url: "media/img/game-bg.jpg",
 };
@@ -368,6 +369,12 @@ const hideIntroVideo = () => {
   showElement(statePanelElement);
 };
 
+const shouldBackgroundMove = () =>
+  characterData.isMoving &&
+  isObjectInMiddleOfWrapper(playgroundElement, characterData) &&
+  backgroundData.position <= 0 &&
+  backgroundData.position > MAX_BACKGROUND_POSITION;
+
 // Event handlers
 
 const handleLoginInput = (evt) => {
@@ -481,6 +488,10 @@ const renderCharacter = () => {
   };
 
   const updateCharacterPosition = () => {
+    const isCharacterInMiddle =
+      characterData.position.x + characterData.width >=
+      playgroundElement.clientWidth / 2 + characterData.width / 2;
+
     switch (characterData.direction) {
       case Direction.RIGHT:
         characterData.position.x += characterData.speed;
@@ -496,15 +507,15 @@ const renderCharacter = () => {
         break;
     }
 
-    const isCharacterInMiddle =
-      characterData.position.x + characterData.width >
-      playgroundElement.clientWidth / 2 + characterData.width / 2;
-
     if (characterData.position.x < 0) {
       characterData.position.x = 0;
     }
 
-    if (isCharacterInMiddle) {
+    if (
+      isCharacterInMiddle &&
+      backgroundData.position < 0 &&
+      backgroundData.position > MAX_BACKGROUND_POSITION
+    ) {
       characterData.position.x =
         playgroundElement.clientWidth / 2 - characterData.width / 2;
     }
@@ -556,15 +567,25 @@ const renderBackground = () => {
   const moveBackground = () => {
     if (!gameState.isStarted) return;
 
-    if (!gameState.isPaused) {
-      const shouldBackgroundMove =
-        characterData.isMoving &&
-        isObjectInMiddleOfWrapper(playgroundElement, characterData);
-
-      if (shouldBackgroundMove) {
-        backgroundData.position -= backgroundData.speed;
-        backgroundInstance.move(backgroundData.position);
+    if (!gameState.isPaused && shouldBackgroundMove()) {
+      switch (characterData.direction) {
+        case Direction.LEFT:
+          backgroundData.position += backgroundData.speed;
+          break;
+        case Direction.RIGHT:
+          backgroundData.position -= backgroundData.speed;
+          break;
       }
+
+      if (backgroundData.position > 0) {
+        backgroundData.position = 0;
+      }
+
+      if (backgroundData.position < MAX_BACKGROUND_POSITION) {
+        backgroundData.position = MAX_BACKGROUND_POSITION;
+      }
+
+      backgroundInstance.move(backgroundData.position);
     }
 
     requestAnimationFrame(moveBackground);
@@ -578,6 +599,61 @@ const renderBackground = () => {
   backgroundInstance.setImage(backgroundData.url);
 
   requestAnimationFrame(moveBackground);
+};
+
+const renderCaterpillars = () => {
+  const regenerateCaterpillars = () => {
+    if (caterpillarsData.length > 0) return;
+
+    createCaterpillarsData(playgroundElement.clientWidth);
+    renderCaterpillars();
+  };
+
+  const removeCaterpillar = (instance, data) => {
+    const index = caterpillarsData.findIndex((originalData) =>
+      areObjectsEqual(originalData, data)
+    );
+
+    instance.destroy();
+    caterpillarsData.splice(index, 1);
+  };
+
+  const moveCaterpillar = (data, index, instance) => () => {
+    if (!gameState.isStarted) return;
+
+    if (!gameState.isPaused) {
+      if (shouldBackgroundMove()) {
+        switch (characterData.direction) {
+          case Direction.LEFT:
+            data.position.x += backgroundData.speed;
+            break;
+          case Direction.RIGHT:
+            data.position.x -= backgroundData.speed;
+            break;
+        }
+
+        instance.move(data.position);
+      }
+
+      if (areObjectsIntersected(data, characterData)) {
+        removeCaterpillar(instance, data);
+        regenerateCaterpillars();
+        scoreCounterData.value++;
+        return;
+      }
+    }
+
+    requestAnimationFrame(moveCaterpillar(data, index, instance));
+  };
+
+  const renderCaterpillar = (data, index) => {
+    const caterpillarInstance = new GameObjectView(data);
+    playgroundElement.append(caterpillarInstance.render());
+
+    requestAnimationFrame(moveCaterpillar(data, index, caterpillarInstance));
+  };
+
+  caterpillarsData.forEach(renderCaterpillar);
 };
 
 const renderTimer = () => {
@@ -603,57 +679,6 @@ const renderTimer = () => {
   timeCounterWrapper.append(timerInstance.render());
 
   requestAnimationFrame(updateTimer);
-};
-
-const renderCaterpillars = () => {
-  const regenerateCaterpillars = () => {
-    if (caterpillarsData.length > 0) return;
-
-    createCaterpillarsData(playgroundElement.clientWidth);
-    renderCaterpillars();
-  };
-
-  const removeCaterpillar = (instance, data) => {
-    const index = caterpillarsData.findIndex((originalData) =>
-      areObjectsEqual(originalData, data)
-    );
-
-    instance.destroy();
-    caterpillarsData.splice(index, 1);
-  };
-
-  const moveCaterpillar = (data, index, instance) => () => {
-    if (!gameState.isStarted) return;
-
-    if (!gameState.isPaused) {
-      const shouldCaterpillarMove =
-        characterData.isMoving &&
-        isObjectInMiddleOfWrapper(playgroundElement, characterData);
-
-      if (shouldCaterpillarMove) {
-        data.position.x -= backgroundData.speed;
-        instance.move(data.position);
-      }
-
-      if (areObjectsIntersected(data, characterData)) {
-        removeCaterpillar(instance, data);
-        regenerateCaterpillars();
-        scoreCounterData.value++;
-        return;
-      }
-    }
-
-    requestAnimationFrame(moveCaterpillar(data, index, instance));
-  };
-
-  const renderCaterpillar = (data, index) => {
-    const caterpillarInstance = new GameObjectView(data);
-    playgroundElement.append(caterpillarInstance.render());
-
-    requestAnimationFrame(moveCaterpillar(data, index, caterpillarInstance));
-  };
-
-  caterpillarsData.forEach(renderCaterpillar);
 };
 
 const renderScoreCounter = () => {
