@@ -7,6 +7,7 @@ const MAX_BACKGROUND_POSITION = -2000;
 const MAX_HYENAS_COUNT = 4;
 const MIN_HYENAS_GAP = 100;
 const MAX_HYENAS_GAP = 800;
+const HYENAS_POSITION_SPREAD = 250;
 
 const Direction = {
   RIGHT: "right",
@@ -211,6 +212,7 @@ class HyenaDataModel {
     this.speed = speed;
     this.direction = direction;
     this.position = position;
+    this.initialPosition = position;
     this.template = template;
     this.sprite = sprite;
   }
@@ -689,6 +691,64 @@ const renderCaterpillars = () => {
   };
 
   caterpillarsData.forEach(renderCaterpillar);
+};
+
+const renderHyenas = () => {
+  const regenerateHyenas = () => {
+    if (hyenasData.length > 0) return;
+
+    createHyenasData();
+    renderHyenas();
+  };
+
+  const removeHyena = (instance, data) => {
+    const index = hyenasData.findIndex((originalData) =>
+      areObjectsEqual(originalData, data)
+    );
+
+    instance.destroy();
+    hyenasData.splice(index, 1);
+  };
+
+  const moveHyena = (data, index, instance) => () => {
+    if (!gameState.isStarted) return;
+    const { initialPosition, speed, direction } = data;
+
+    if (!gameState.isPaused) {
+      switch (direction) {
+        case Direction.LEFT:
+          data.position.x -= speed;
+          break;
+        case Direction.RIGHT:
+          data.position.x += speed;
+          break;
+      }
+
+      if (data.position.x < initialPosition.x - HYENAS_POSITION_SPREAD) {
+        data.direction = Direction.RIGHT;
+      }
+
+      if (data.position.x > initialPosition.x + HYENAS_POSITION_SPREAD) {
+        data.direction = Direction.LEFT;
+      }
+
+      instance.move(data.position);
+
+      // if (areObjectsIntersected(data, characterData)) {
+      // }
+    }
+
+    requestAnimationFrame(moveHyena(data, index, instance));
+  };
+
+  const renderHyena = (data, index) => {
+    const hyenaInstance = new AnimatedGameObjectView(data);
+    playgroundElement.append(hyenaInstance.render());
+
+    requestAnimationFrame(moveHyena(data, index, hyenaInstance));
+  };
+
+  hyenasData.forEach(renderHyena);
 };
 
 const renderTimer = () => {
