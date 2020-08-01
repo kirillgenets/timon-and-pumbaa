@@ -6,7 +6,7 @@ const MAX_CATERPILLARS_GAP = 800;
 const MAX_BACKGROUND_POSITION = -2000;
 const MAX_HYENAS_COUNT = 4;
 const MIN_HYENAS_GAP = 100;
-const MAX_HYENAS_GAP = 800;
+const MAX_HYENAS_GAP = 500;
 const HYENAS_POSITION_SPREAD = 250;
 
 const Direction = {
@@ -37,7 +37,7 @@ const SpriteData = {
   HYENA: {
     running: {
       url: "media/img/sprites/hyena-running.png",
-      framesWidth: 157,
+      framesWidth: 157.09,
     },
     biting: {
       url: "media/img/sprites/hyena-biting.png",
@@ -103,7 +103,7 @@ const initialHyenaData = {
   width: 157,
   height: 100,
   speed: 2,
-  direction: Direction.NONE,
+  direction: Direction.LEFT,
   position: {
     x: 0,
     y: 100,
@@ -212,7 +212,7 @@ class HyenaDataModel {
     this.speed = speed;
     this.direction = direction;
     this.position = position;
-    this.initialPosition = position;
+    this.initialPosition = { ...position };
     this.template = template;
     this.sprite = sprite;
   }
@@ -460,31 +460,35 @@ const createCaterpillarsData = (initialPosition) => {
   });
 
   for (let i = 0; i < MAX_CATERPILLARS_COUNT; i++) {
-    caterpillarsData.push({
-      ...initialCaterpillarData,
-      position: {
-        x: positionIterator.next(),
-        y: initialCaterpillarData.position.y,
-      },
-    });
+    caterpillarsData.push(
+      new CaterpillarDataModel({
+        ...initialCaterpillarData,
+        position: {
+          x: positionIterator.next(),
+          y: initialCaterpillarData.position.y,
+        },
+      })
+    );
   }
 };
 
 const createHyenasData = () => {
   const positionIterator = new ObjectPositionIterator({
-    initialPosition: playgroundElement.clientWidth,
+    initialPosition: 300,
     minGap: MIN_HYENAS_GAP,
     maxGap: MAX_HYENAS_GAP,
   });
 
   for (let i = 0; i < MAX_HYENAS_COUNT; i++) {
-    hyenasData.push({
-      ...initialHyenaData,
-      position: {
-        x: positionIterator.next(),
-        y: initialHyenaData.position.y,
-      },
-    });
+    hyenasData.push(
+      new HyenaDataModel({
+        ...initialHyenaData,
+        position: {
+          x: positionIterator.next(),
+          y: initialHyenaData.position.y,
+        },
+      })
+    );
   }
 };
 
@@ -710,11 +714,25 @@ const renderHyenas = () => {
     hyenasData.splice(index, 1);
   };
 
-  const moveHyena = (data, index, instance) => () => {
+  const getSpriteInstance = (newSprite, previousSprite, spriteInstance) => {
+    if (!areObjectsEqual(newSprite, previousSprite)) {
+      return new AnimationSprite({
+        position: 0,
+        ...newSprite,
+      });
+    }
+
+    return spriteInstance;
+  };
+
+  const moveHyena = (data, index, instance, spriteInstance) => () => {
     if (!gameState.isStarted) return;
-    const { initialPosition, speed, direction } = data;
+
+    const { initialPosition, speed, direction, sprite } = data;
 
     if (!gameState.isPaused) {
+      const previousSprite = { ...sprite };
+
       switch (direction) {
         case Direction.LEFT:
           data.position.x -= speed;
@@ -722,6 +740,36 @@ const renderHyenas = () => {
         case Direction.RIGHT:
           data.position.x += speed;
           break;
+      }
+
+      if (shouldBackgroundMove()) {
+        if (
+          characterData.direction === Direction.LEFT &&
+          direction === Direction.LEFT
+        ) {
+          data.position.x += characterData.speed;
+        }
+
+        if (
+          characterData.direction === Direction.RIGHT &&
+          direction === Direction.RIGHT
+        ) {
+          data.position.x -= characterData.speed;
+        }
+
+        if (
+          characterData.direction === Direction.LEFT &&
+          direction === Direction.RIGHT
+        ) {
+          data.position.x += characterData.speed - data.speed;
+        }
+
+        if (
+          characterData.direction === Direction.RIGHT &&
+          direction === Direction.LEFT
+        ) {
+          data.position.x -= characterData.speed - data.speed;
+        }
       }
 
       if (data.position.x < initialPosition.x - HYENAS_POSITION_SPREAD) {
@@ -732,20 +780,26 @@ const renderHyenas = () => {
         data.direction = Direction.LEFT;
       }
 
-      instance.move(data.position);
-
-      // if (areObjectsIntersected(data, characterData)) {
-      // }
+      instance.move(
+        data.position,
+        getSpriteInstance(data.sprite.data, previousSprite.data, spriteInstance)
+      );
     }
 
-    requestAnimationFrame(moveHyena(data, index, instance));
+    requestAnimationFrame(moveHyena(data, index, instance, spriteInstance));
   };
 
   const renderHyena = (data, index) => {
     const hyenaInstance = new AnimatedGameObjectView(data);
     playgroundElement.append(hyenaInstance.render());
+    const spriteInstance = new AnimationSprite({
+      position: data.sprite.position,
+      ...data.sprite.data,
+    });
 
-    requestAnimationFrame(moveHyena(data, index, hyenaInstance));
+    requestAnimationFrame(
+      moveHyena(data, index, hyenaInstance, spriteInstance)
+    );
   };
 
   hyenasData.forEach(renderHyena);
@@ -799,6 +853,7 @@ const renderAllObjects = () => {
   renderTimer();
   renderCaterpillars();
   renderScoreCounter();
+  renderHyenas();
 };
 
 // Main functions
