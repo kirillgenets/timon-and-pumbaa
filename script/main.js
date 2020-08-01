@@ -9,6 +9,7 @@ const MIN_HYENAS_GAP = 100;
 const MAX_HYENAS_GAP = 500;
 const HYENAS_POSITION_SPREAD = 250;
 const HP_DECREASE_STEP = 1;
+const MAX_HP = 100;
 
 const Direction = {
   RIGHT: "right",
@@ -117,6 +118,7 @@ const initialHyenaData = {
   },
   template: document.querySelector("#hyena"),
   sprite: { data: SpriteData.HYENA.running, position: 0 },
+  damage: 30,
 };
 
 const initialScoreCounterData = {
@@ -221,7 +223,16 @@ class CharacterDataModel {
 }
 
 class HyenaDataModel {
-  constructor({ width, height, speed, direction, position, template, sprite }) {
+  constructor({
+    width,
+    height,
+    speed,
+    direction,
+    position,
+    template,
+    sprite,
+    damage,
+  }) {
     this.width = width;
     this.height = height;
     this.speed = speed;
@@ -230,6 +241,7 @@ class HyenaDataModel {
     this.initialPosition = { ...position };
     this.template = template;
     this.sprite = sprite;
+    this.damage = damage;
   }
 }
 
@@ -838,6 +850,10 @@ const renderHyenas = () => {
 
       updateHyenaPosition(data);
 
+      if (areObjectsIntersected(characterData, data)) {
+        hpCounterData.value -= data.damage;
+      }
+
       instance.move(
         data.position,
         getSpriteInstance(data.sprite.data, previousSprite.data, spriteInstance)
@@ -921,6 +937,15 @@ const renderHpCounter = () => {
 
     if (!gameState.isPaused) {
       decreaseHp();
+
+      if (hpCounterData.value < 0) {
+        hpCounterData.value = 0;
+      }
+
+      if (hpCounterData.value > MAX_HP) {
+        hpCounterData.value = MAX_HP;
+      }
+
       hpCounterInstance.update(hpCounterData.value);
     }
 
