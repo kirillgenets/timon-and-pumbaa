@@ -775,60 +775,68 @@ const renderHyenas = () => {
     return spriteInstance;
   };
 
+  const normalizeHyenaPosition = (data) => {
+    if (
+      characterData.direction === Direction.LEFT &&
+      data.direction === Direction.LEFT
+    ) {
+      data.position.x += characterData.speed;
+    }
+
+    if (
+      characterData.direction === Direction.RIGHT &&
+      data.direction === Direction.RIGHT
+    ) {
+      data.position.x -= characterData.speed;
+    }
+
+    if (
+      characterData.direction === Direction.LEFT &&
+      data.direction === Direction.RIGHT
+    ) {
+      data.position.x += characterData.speed - data.speed;
+    }
+
+    if (
+      characterData.direction === Direction.RIGHT &&
+      data.direction === Direction.LEFT
+    ) {
+      data.position.x -= characterData.speed - data.speed;
+    }
+  };
+
+  const updateHyenaPosition = (data) => {
+    const { initialPosition, speed, direction } = data;
+
+    switch (direction) {
+      case Direction.LEFT:
+        data.position.x -= speed;
+        break;
+      case Direction.RIGHT:
+        data.position.x += speed;
+        break;
+    }
+
+    if (shouldBackgroundMove()) {
+      normalizeHyenaPosition(data);
+    }
+
+    if (data.position.x < initialPosition.x - HYENAS_POSITION_SPREAD) {
+      data.direction = Direction.RIGHT;
+    }
+
+    if (data.position.x > initialPosition.x + HYENAS_POSITION_SPREAD) {
+      data.direction = Direction.LEFT;
+    }
+  };
+
   const moveHyena = (data, index, instance, spriteInstance) => () => {
     if (!gameState.isStarted) return;
 
-    const { initialPosition, speed, direction, sprite } = data;
-
     if (!gameState.isPaused) {
-      const previousSprite = { ...sprite };
+      const previousSprite = { ...data.sprite };
 
-      switch (direction) {
-        case Direction.LEFT:
-          data.position.x -= speed;
-          break;
-        case Direction.RIGHT:
-          data.position.x += speed;
-          break;
-      }
-
-      if (shouldBackgroundMove()) {
-        if (
-          characterData.direction === Direction.LEFT &&
-          direction === Direction.LEFT
-        ) {
-          data.position.x += characterData.speed;
-        }
-
-        if (
-          characterData.direction === Direction.RIGHT &&
-          direction === Direction.RIGHT
-        ) {
-          data.position.x -= characterData.speed;
-        }
-
-        if (
-          characterData.direction === Direction.LEFT &&
-          direction === Direction.RIGHT
-        ) {
-          data.position.x += characterData.speed - data.speed;
-        }
-
-        if (
-          characterData.direction === Direction.RIGHT &&
-          direction === Direction.LEFT
-        ) {
-          data.position.x -= characterData.speed - data.speed;
-        }
-      }
-
-      if (data.position.x < initialPosition.x - HYENAS_POSITION_SPREAD) {
-        data.direction = Direction.RIGHT;
-      }
-
-      if (data.position.x > initialPosition.x + HYENAS_POSITION_SPREAD) {
-        data.direction = Direction.LEFT;
-      }
+      updateHyenaPosition(data);
 
       instance.move(
         data.position,
