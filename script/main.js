@@ -89,6 +89,11 @@ const initialTimerData = {
   template: document.querySelector("#counter"),
 };
 
+const initialHpCounterData = {
+  value: 100,
+  template: document.querySelector("#hp"),
+};
+
 const initialCaterpillarData = {
   width: 62,
   height: 50,
@@ -177,6 +182,13 @@ class TimerDataModel {
 }
 
 class ScoreCounterDataModel {
+  constructor({ value, template }) {
+    this.value = value;
+    this.template = template;
+  }
+}
+
+class HpCounterDataModel {
   constructor({ value, template }) {
     this.value = value;
     this.template = template;
@@ -342,7 +354,35 @@ class CounterView extends DestroyableObject {
   }
 
   update(value) {
-    this._element.textContent = value;
+    this._value = value;
+    this._element.textContent = this._value;
+  }
+}
+
+class HpCounterView extends CounterView {
+  constructor(props) {
+    super(props);
+
+    this._scaleElement = null;
+    this._valueElement = null;
+  }
+
+  render() {
+    this._element = getElementFromTemplate(this._template);
+    this._scaleElement = this._element.querySelector(".hp-scale-value");
+    this._valueElement = this._element.querySelector(".counter");
+
+    this._scaleElement.style.width = `${this._value}%`;
+    this._valueElement.textContent = this._value;
+
+    return this._element;
+  }
+
+  update(value) {
+    this._value = value;
+
+    this._scaleElement.style.width = `${this._value}%`;
+    this._valueElement.textContent = this._value;
   }
 }
 
@@ -358,12 +398,13 @@ const introVideoElement = gameWrapperElement.querySelector(".intro-video");
 
 const playgroundElement = gameWrapperElement.querySelector(".playground");
 const statePanelElement = gameWrapperElement.querySelector(".panel");
-const timeCounterWrapper = gameWrapperElement.querySelector(
+const timeCounterWrapper = statePanelElement.querySelector(
   ".time-counter-wrapper"
 );
-const scoreCounterWrapper = gameWrapperElement.querySelector(
+const scoreCounterWrapper = statePanelElement.querySelector(
   ".caterpillar-counter-wrapper"
 );
+const hpCounterWrapper = statePanelElement.querySelector(".hp-counter-wrapper");
 
 // Data initialization
 
@@ -373,6 +414,7 @@ let characterData = {};
 let backgroundData = {};
 let timerData = {};
 let scoreCounterData = {};
+let hpCounterData = {};
 let caterpillarsData = [];
 let hyenasData = [];
 
@@ -496,6 +538,10 @@ const createScoreCounterData = () => {
   scoreCounterData = new ScoreCounterDataModel(initialScoreCounterData);
 };
 
+const createHpCounterData = () => {
+  hpCounterData = new HpCounterDataModel(initialHpCounterData);
+};
+
 const createAllObjectsData = () => {
   createBackgroundData();
   createCharacterData();
@@ -503,6 +549,7 @@ const createAllObjectsData = () => {
   createCaterpillarsData(initialCaterpillarData.position.x);
   createScoreCounterData();
   createHyenasData();
+  createHpCounterData();
 };
 
 // Objects rendering
@@ -847,6 +894,23 @@ const renderScoreCounter = () => {
   requestAnimationFrame(updateScoreCounter);
 };
 
+const renderHpCounter = () => {
+  const updateHpCounter = () => {
+    if (!gameState.isStarted) return;
+
+    if (!gameState.isPaused) {
+      hpCounterInstance.update(hpCounterData.value);
+    }
+
+    requestAnimationFrame(updateHpCounter);
+  };
+
+  const hpCounterInstance = new HpCounterView(hpCounterData);
+  hpCounterWrapper.append(hpCounterInstance.render());
+
+  requestAnimationFrame(updateHpCounter);
+};
+
 const renderAllObjects = () => {
   renderCharacter();
   renderBackground();
@@ -854,6 +918,7 @@ const renderAllObjects = () => {
   renderCaterpillars();
   renderScoreCounter();
   renderHyenas();
+  renderHpCounter();
 };
 
 // Main functions
