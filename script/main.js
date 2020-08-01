@@ -8,6 +8,7 @@ const MAX_HYENAS_COUNT = 4;
 const MIN_HYENAS_GAP = 100;
 const MAX_HYENAS_GAP = 500;
 const HYENAS_POSITION_SPREAD = 250;
+const HP_DECREASE_STEP = 1;
 
 const Direction = {
   RIGHT: "right",
@@ -92,6 +93,7 @@ const initialTimerData = {
 const initialHpCounterData = {
   value: 100,
   template: document.querySelector("#hp"),
+  previousDecrease: 0,
 };
 
 const initialCaterpillarData = {
@@ -189,9 +191,10 @@ class ScoreCounterDataModel {
 }
 
 class HpCounterDataModel {
-  constructor({ value, template }) {
+  constructor({ value, template, previousDecrease }) {
     this.value = value;
     this.template = template;
+    this.previousDecrease = previousDecrease;
   }
 }
 
@@ -895,10 +898,21 @@ const renderScoreCounter = () => {
 };
 
 const renderHpCounter = () => {
+  const decreaseHp = () => {
+    const seconds = Math.floor(
+      ((Date.now() - timerData.startTime) / 1000) % 60
+    );
+
+    hpCounterData.value -=
+      seconds === hpCounterData.previousDecrease ? 0 : HP_DECREASE_STEP;
+    hpCounterData.previousDecrease = seconds;
+  };
+
   const updateHpCounter = () => {
     if (!gameState.isStarted) return;
 
     if (!gameState.isPaused) {
+      decreaseHp();
       hpCounterInstance.update(hpCounterData.value);
     }
 
