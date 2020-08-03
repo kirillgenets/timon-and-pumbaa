@@ -4,11 +4,11 @@ const MAX_CATERPILLARS_COUNT = 5;
 const MIN_CATERPILLARS_GAP = 300;
 const MAX_CATERPILLARS_GAP = 800;
 
-const MAX_BACKGROUND_POSITION = -2000;
+const MAX_BACKGROUND_POSITION = -4000;
 
-const MAX_HYENAS_COUNT = 4;
-const MIN_HYENAS_GAP = 100;
-const MAX_HYENAS_GAP = 500;
+const MAX_HYENAS_COUNT = 3;
+const MIN_HYENAS_GAP = 300;
+const MAX_HYENAS_GAP = 600;
 const HYENAS_POSITION_SPREAD = 250;
 
 const CATERPILLAR_HP_INCREASE = 15;
@@ -113,7 +113,7 @@ const initialCaterpillarData = {
 };
 
 const initialHyenaData = {
-  width: 157,
+  width: 160,
   height: 100,
   speed: 2,
   direction: Direction.LEFT,
@@ -542,7 +542,7 @@ const createCaterpillarsData = (initialPosition) => {
 
 const createHyenasData = () => {
   const positionIterator = new ObjectPositionIterator({
-    initialPosition: 300,
+    initialPosition: playgroundElement.clientWidth,
     minGap: MIN_HYENAS_GAP,
     maxGap: MAX_HYENAS_GAP,
   });
@@ -884,6 +884,12 @@ const renderHyenas = () => {
 
       if (areObjectsIntersected(characterData, data)) {
         requestAnimationFrame(damageCharacter(data));
+      }
+
+      if (data.position.x + data.width < 0) {
+        removeHyena(instance, data);
+        regenerateHyenas();
+        return;
       }
 
       instance.move(
