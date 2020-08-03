@@ -44,7 +44,7 @@ const SpriteData = {
   HYENA: {
     running: {
       url: "media/img/sprites/hyena-running.png",
-      framesWidth: 157.068,
+      framesWidth: 160,
     },
     biting: {
       url: "media/img/sprites/hyena-biting.png",
@@ -820,6 +820,7 @@ const renderHyenas = () => {
       characterData.direction === Direction.LEFT &&
       data.direction === Direction.LEFT
     ) {
+      data.initialPosition.x += characterData.speed;
       data.position.x += characterData.speed;
     }
 
@@ -827,6 +828,7 @@ const renderHyenas = () => {
       characterData.direction === Direction.RIGHT &&
       data.direction === Direction.RIGHT
     ) {
+      data.initialPosition.x -= characterData.speed;
       data.position.x -= characterData.speed;
     }
 
@@ -834,6 +836,7 @@ const renderHyenas = () => {
       characterData.direction === Direction.LEFT &&
       data.direction === Direction.RIGHT
     ) {
+      data.initialPosition.x += characterData.speed - data.speed;
       data.position.x += characterData.speed - data.speed;
     }
 
@@ -841,6 +844,7 @@ const renderHyenas = () => {
       characterData.direction === Direction.RIGHT &&
       data.direction === Direction.LEFT
     ) {
+      data.initialPosition.x -= characterData.speed - data.speed;
       data.position.x -= characterData.speed - data.speed;
     }
   };
