@@ -3,11 +3,16 @@
 const MAX_CATERPILLARS_COUNT = 5;
 const MIN_CATERPILLARS_GAP = 300;
 const MAX_CATERPILLARS_GAP = 800;
+
 const MAX_BACKGROUND_POSITION = -2000;
+
 const MAX_HYENAS_COUNT = 4;
 const MIN_HYENAS_GAP = 100;
 const MAX_HYENAS_GAP = 500;
 const HYENAS_POSITION_SPREAD = 250;
+
+const CATERPILLAR_HP_INCREASE = 15;
+
 const HP_DECREASE_STEP = 1;
 const MAX_HP = 100;
 
@@ -39,7 +44,7 @@ const SpriteData = {
   HYENA: {
     running: {
       url: "media/img/sprites/hyena-running.png",
-      framesWidth: 157.09,
+      framesWidth: 157.068,
     },
     biting: {
       url: "media/img/sprites/hyena-biting.png",
@@ -119,6 +124,8 @@ const initialHyenaData = {
   template: document.querySelector("#hyena"),
   sprite: { data: SpriteData.HYENA.running, position: 0 },
   damage: 30,
+  damageTime: null,
+  previousDamage: null,
 };
 
 const initialScoreCounterData = {
@@ -232,6 +239,8 @@ class HyenaDataModel {
     template,
     sprite,
     damage,
+    damageTime,
+    previousDamage,
   }) {
     this.width = width;
     this.height = height;
@@ -242,6 +251,8 @@ class HyenaDataModel {
     this.template = template;
     this.sprite = sprite;
     this.damage = damage;
+    this.damageTime = damageTime;
+    this.previousDamage = previousDamage;
   }
 }
 
@@ -742,6 +753,7 @@ const renderCaterpillars = () => {
         removeCaterpillar(instance, data);
         regenerateCaterpillars();
         scoreCounterData.value++;
+        hpCounterData.value += CATERPILLAR_HP_INCREASE;
         return;
       }
     }
@@ -774,6 +786,22 @@ const renderHyenas = () => {
 
     instance.destroy();
     hyenasData.splice(index, 1);
+  };
+
+  const damageCharacter = (data) => () => {
+    if (!data.damageTime) {
+      data.damageTime = Date.now();
+      data.previousDamage = 0;
+      hpCounterData.value -= data.damage;
+      return;
+    }
+
+    const currentTime = Math.floor((Date.now() - data.damageTime) / 1000);
+
+    if (currentTime === data.previousDamage) return;
+
+    data.previousDamage = currentTime;
+    hpCounterData.value -= data.damage;
   };
 
   const getSpriteInstance = (newSprite, previousSprite, spriteInstance) => {
@@ -851,7 +879,7 @@ const renderHyenas = () => {
       updateHyenaPosition(data);
 
       if (areObjectsIntersected(characterData, data)) {
-        hpCounterData.value -= data.damage;
+        requestAnimationFrame(damageCharacter(data));
       }
 
       instance.move(
