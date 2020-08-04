@@ -1,8 +1,8 @@
 (() => {
-  const { backgroundData, gameState } = window.data;
+  const { MAX_BACKGROUND_POSITION, Direction } = window.constants;
+  const { shouldBackgroundMove } = window.controllers.utils;
   const { BackgroundDataModel } = window.models;
   const { BackgroundView } = window.views;
-  const { MAX_BACKGROUND_POSITION } = window.constants;
 
   const initialBackgroundData = {
     position: -1,
@@ -13,43 +13,45 @@
   const playgroundElement = document.querySelector(".playground");
 
   const createBackgroundData = () => {
-    backgroundData = new BackgroundDataModel(initialBackgroundData);
+    window.data.backgroundData = new BackgroundDataModel(initialBackgroundData);
   };
 
   const renderBackground = () => {
     const moveBackground = () => {
-      if (!gameState.isStarted) return;
+      if (!window.data.gameState.isStarted) return;
 
-      if (!gameState.isPaused && shouldBackgroundMove()) {
-        switch (characterData.direction) {
+      if (!window.data.gameState.isPaused && shouldBackgroundMove()) {
+        switch (window.data.characterData.direction) {
           case Direction.LEFT:
-            backgroundData.position += backgroundData.speed;
+            window.data.backgroundData.position +=
+              window.data.backgroundData.speed;
             break;
           case Direction.RIGHT:
-            backgroundData.position -= backgroundData.speed;
+            window.data.backgroundData.position -=
+              window.data.backgroundData.speed;
             break;
         }
 
-        if (backgroundData.position > 0) {
-          backgroundData.position = 0;
+        if (window.data.backgroundData.position > 0) {
+          window.data.backgroundData.position = 0;
         }
 
-        if (backgroundData.position < MAX_BACKGROUND_POSITION) {
-          backgroundData.position = MAX_BACKGROUND_POSITION;
+        if (window.data.backgroundData.position < MAX_BACKGROUND_POSITION) {
+          window.data.backgroundData.position = MAX_BACKGROUND_POSITION;
         }
 
-        backgroundInstance.move(backgroundData.position);
+        backgroundInstance.move(window.data.backgroundData.position);
       }
 
       requestAnimationFrame(moveBackground);
     };
 
     const backgroundInstance = new BackgroundView({
-      position: backgroundData.position,
+      position: window.data.backgroundData.position,
       element: playgroundElement,
     });
 
-    backgroundInstance.setImage(backgroundData.url);
+    backgroundInstance.setImage(window.data.backgroundData.url);
 
     requestAnimationFrame(moveBackground);
   };

@@ -1,5 +1,4 @@
 (() => {
-  const { characterData, gameState } = window.data;
   const { CharacterDataModel } = window.models;
   const {
     SpriteData,
@@ -27,69 +26,75 @@
   const playgroundElement = document.querySelector(".playground");
 
   const createCharacterData = () => {
-    characterData = new CharacterDataModel(initialCharacterData);
+    window.data.characterData = new CharacterDataModel(initialCharacterData);
   };
 
   const renderCharacter = () => {
     const handleCharacterKeyDown = (evt) => {
       switch (evt.code) {
         case Key.ARROW_RIGHT:
-          characterData.direction = Direction.RIGHT;
-          characterData.isMoving = true;
+          window.data.characterData.direction = Direction.RIGHT;
+          window.data.characterData.isMoving = true;
           break;
         case Key.ARROW_LEFT:
-          characterData.direction = Direction.LEFT;
-          characterData.isMoving = true;
+          window.data.characterData.direction = Direction.LEFT;
+          window.data.characterData.isMoving = true;
           break;
       }
     };
 
     const handleCharacterKeyUp = (evt) => {
       if (evt.code === Key.ARROW_LEFT || evt.code === Key.ARROW_RIGHT) {
-        characterData.direction = Direction.NONE;
-        characterData.isMoving = false;
+        window.data.characterData.direction = Direction.NONE;
+        window.data.characterData.isMoving = false;
       }
     };
 
     const updateCharacterPosition = () => {
       const isCharacterInMiddle =
-        characterData.position.x + characterData.width >=
-        playgroundElement.clientWidth / 2 + characterData.width / 2;
+        window.data.characterData.position.x +
+          window.data.characterData.width >=
+        playgroundElement.clientWidth / 2 + window.data.characterData.width / 2;
 
-      switch (characterData.direction) {
+      switch (window.data.characterData.direction) {
         case Direction.RIGHT:
-          characterData.position.x += characterData.speed;
-          characterData.sprite.data = SpriteData.CHARACTER.running;
+          window.data.characterData.position.x +=
+            window.data.characterData.speed;
+          window.data.characterData.sprite.data = SpriteData.CHARACTER.running;
           break;
         case Direction.LEFT:
-          characterData.position.x -= characterData.speed;
-          characterData.sprite.data = SpriteData.CHARACTER.running;
+          window.data.characterData.position.x -=
+            window.data.characterData.speed;
+          window.data.characterData.sprite.data = SpriteData.CHARACTER.running;
           break;
         case Direction.NONE:
         default:
-          characterData.sprite.data = SpriteData.CHARACTER.standing;
+          window.data.characterData.sprite.data = SpriteData.CHARACTER.standing;
           break;
       }
 
-      if (characterData.position.x < 0) {
-        characterData.position.x = 0;
+      if (window.data.characterData.position.x < 0) {
+        window.data.characterData.position.x = 0;
       }
 
       if (
         isCharacterInMiddle &&
-        backgroundData.position < 0 &&
-        backgroundData.position > MAX_BACKGROUND_POSITION
+        window.data.backgroundData.position < 0 &&
+        window.data.backgroundData.position > MAX_BACKGROUND_POSITION
       ) {
-        characterData.position.x =
-          playgroundElement.clientWidth / 2 - characterData.width / 2;
+        window.data.characterData.position.x =
+          playgroundElement.clientWidth / 2 -
+          window.data.characterData.width / 2;
       }
     };
 
     const getSpriteInstance = (previousSprite) => {
-      if (!areObjectsEqual(characterData.sprite.data, previousSprite)) {
+      if (
+        !areObjectsEqual(window.data.characterData.sprite.data, previousSprite)
+      ) {
         spriteInstance = new AnimationSprite({
           position: 0,
-          ...characterData.sprite.data,
+          ...window.data.characterData.sprite.data,
         });
       }
 
@@ -97,15 +102,15 @@
     };
 
     const moveCharacter = () => {
-      if (!gameState.isStarted) return;
+      if (!window.data.gameState.isStarted) return;
 
-      if (!gameState.isPaused) {
-        const previousSprite = characterData.sprite.data;
+      if (!window.data.gameState.isPaused) {
+        const previousSprite = window.data.characterData.sprite.data;
 
         updateCharacterPosition();
 
         characterInstance.move(
-          characterData.position,
+          window.data.characterData.position,
           getSpriteInstance(previousSprite)
         );
       }
@@ -114,11 +119,13 @@
     };
 
     let spriteInstance = new AnimationSprite({
-      position: characterData.sprite.position,
-      ...characterData.sprite.data,
+      position: window.data.characterData.sprite.position,
+      ...window.data.characterData.sprite.data,
     });
 
-    const characterInstance = new AnimatedGameObjectView(characterData);
+    const characterInstance = new AnimatedGameObjectView(
+      window.data.characterData
+    );
     playgroundElement.append(characterInstance.render());
 
     document.addEventListener("keydown", handleCharacterKeyDown);

@@ -1,5 +1,5 @@
 (() => {
-  const { hpCounterData, timerData, gameState } = window.data;
+  const { MAX_HP, HP_DECREASE_STEP } = window.constants;
   const { HpCounterDataModel } = window.models;
   const { HpCounterView } = window.views;
 
@@ -9,42 +9,46 @@
     previousDecrease: 0,
   };
 
+  const hpCounterWrapper = document.querySelector(".hp-counter-wrapper");
+
   const createHpCounterData = () => {
-    hpCounterData = new HpCounterDataModel(initialHpCounterData);
+    window.data.hpCounterData = new HpCounterDataModel(initialHpCounterData);
   };
 
   const renderHpCounter = () => {
     const decreaseHp = () => {
       const seconds = Math.floor(
-        ((Date.now() - timerData.startTime) / 1000) % 60
+        ((Date.now() - window.data.timerData.startTime) / 1000) % 60
       );
 
-      hpCounterData.value -=
-        seconds === hpCounterData.previousDecrease ? 0 : HP_DECREASE_STEP;
-      hpCounterData.previousDecrease = seconds;
+      window.data.hpCounterData.value -=
+        seconds === window.data.hpCounterData.previousDecrease
+          ? 0
+          : HP_DECREASE_STEP;
+      window.data.hpCounterData.previousDecrease = seconds;
     };
 
     const updateHpCounter = () => {
-      if (!gameState.isStarted) return;
+      if (!window.data.gameState.isStarted) return;
 
-      if (!gameState.isPaused) {
+      if (!window.data.gameState.isPaused) {
         decreaseHp();
 
-        if (hpCounterData.value < 0) {
-          hpCounterData.value = 0;
+        if (window.data.hpCounterData.value < 0) {
+          window.data.hpCounterData.value = 0;
         }
 
-        if (hpCounterData.value > MAX_HP) {
-          hpCounterData.value = MAX_HP;
+        if (window.data.hpCounterData.value > MAX_HP) {
+          window.data.hpCounterData.value = MAX_HP;
         }
 
-        hpCounterInstance.update(hpCounterData.value);
+        hpCounterInstance.update(window.data.hpCounterData.value);
       }
 
       requestAnimationFrame(updateHpCounter);
     };
 
-    const hpCounterInstance = new HpCounterView(hpCounterData);
+    const hpCounterInstance = new HpCounterView(window.data.hpCounterData);
     hpCounterWrapper.append(hpCounterInstance.render());
 
     requestAnimationFrame(updateHpCounter);

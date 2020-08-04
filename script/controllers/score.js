@@ -1,5 +1,4 @@
 (() => {
-  const { scoreCounterData, gameState } = window.data;
   const { ScoreCounterDataModel } = window.models;
   const { CounterView } = window.views;
 
@@ -13,21 +12,23 @@
   );
 
   const createScoreCounterData = () => {
-    scoreCounterData = new ScoreCounterDataModel(initialScoreCounterData);
+    window.data.scoreCounterData = new ScoreCounterDataModel(
+      initialScoreCounterData
+    );
   };
 
   const renderScoreCounter = () => {
     const updateScoreCounter = () => {
-      if (!gameState.isStarted) return;
+      if (!window.data.gameState.isStarted) return;
 
-      if (!gameState.isPaused) {
-        scoreCounterInstance.update(scoreCounterData.value);
+      if (!window.data.gameState.isPaused) {
+        scoreCounterInstance.update(window.data.scoreCounterData.value);
       }
 
       requestAnimationFrame(updateScoreCounter);
     };
 
-    const scoreCounterInstance = new CounterView(scoreCounterData);
+    const scoreCounterInstance = new CounterView(window.data.scoreCounterData);
     scoreCounterWrapper.append(scoreCounterInstance.render());
 
     requestAnimationFrame(updateScoreCounter);

@@ -13,7 +13,6 @@
     MAX_HYENAS_COUNT,
     HYENAS_POSITION_SPREAD,
   } = window.constants;
-  const { hyenasData, hpCounterData, characterData } = window.data;
   const { HyenaDataModel } = window.models;
   const { AnimatedGameObjectView, AnimationSprite } = window.views;
 
@@ -43,7 +42,7 @@
     });
 
     for (let i = 0; i < MAX_HYENAS_COUNT; i++) {
-      hyenasData.push(
+      window.data.hyenasData.push(
         new HyenaDataModel({
           ...initialHyenaData,
           position: {
@@ -57,26 +56,26 @@
 
   const renderHyenas = () => {
     const regenerateHyenas = () => {
-      if (hyenasData.length > 0) return;
+      if (window.data.hyenasData.length > 0) return;
 
       createHyenasData();
       renderHyenas();
     };
 
     const removeHyena = (instance, data) => {
-      const index = hyenasData.findIndex((originalData) =>
+      const index = window.data.hyenasData.findIndex((originalData) =>
         areObjectsEqual(originalData, data)
       );
 
       instance.destroy();
-      hyenasData.splice(index, 1);
+      window.data.hyenasData.splice(index, 1);
     };
 
     const damageCharacter = (data) => () => {
       if (!data.damageTime) {
         data.damageTime = Date.now();
         data.previousDamage = 0;
-        hpCounterData.value -= data.damage;
+        window.data.hpCounterData.value -= data.damage;
         return;
       }
 
@@ -85,7 +84,7 @@
       if (currentTime === data.previousDamage) return;
 
       data.previousDamage = currentTime;
-      hpCounterData.value -= data.damage;
+      window.data.hpCounterData.value -= data.damage;
     };
 
     const getSpriteInstance = (newSprite, previousSprite, spriteInstance) => {
@@ -101,35 +100,35 @@
 
     const normalizeHyenaPosition = (data) => {
       if (
-        characterData.direction === Direction.LEFT &&
+        window.data.characterData.direction === Direction.LEFT &&
         data.direction === Direction.LEFT
       ) {
-        data.initialPosition.x += characterData.speed;
-        data.position.x += characterData.speed;
+        data.initialPosition.x += window.data.characterData.speed;
+        data.position.x += window.data.characterData.speed;
       }
 
       if (
-        characterData.direction === Direction.RIGHT &&
+        window.data.characterData.direction === Direction.RIGHT &&
         data.direction === Direction.RIGHT
       ) {
-        data.initialPosition.x -= characterData.speed;
-        data.position.x -= characterData.speed;
+        data.initialPosition.x -= window.data.characterData.speed;
+        data.position.x -= window.data.characterData.speed;
       }
 
       if (
-        characterData.direction === Direction.LEFT &&
+        window.data.characterData.direction === Direction.LEFT &&
         data.direction === Direction.RIGHT
       ) {
-        data.initialPosition.x += characterData.speed - data.speed;
-        data.position.x += characterData.speed - data.speed;
+        data.initialPosition.x += window.data.characterData.speed - data.speed;
+        data.position.x += window.data.characterData.speed - data.speed;
       }
 
       if (
-        characterData.direction === Direction.RIGHT &&
+        window.data.characterData.direction === Direction.RIGHT &&
         data.direction === Direction.LEFT
       ) {
-        data.initialPosition.x -= characterData.speed - data.speed;
-        data.position.x -= characterData.speed - data.speed;
+        data.initialPosition.x -= window.data.characterData.speed - data.speed;
+        data.position.x -= window.data.characterData.speed - data.speed;
       }
     };
 
@@ -159,14 +158,14 @@
     };
 
     const moveHyena = (data, index, instance, spriteInstance) => () => {
-      if (!gameState.isStarted) return;
+      if (!window.data.gameState.isStarted) return;
 
-      if (!gameState.isPaused) {
+      if (!window.data.gameState.isPaused) {
         const previousSprite = { ...data.sprite };
 
         updateHyenaPosition(data);
 
-        if (areObjectsIntersected(characterData, data)) {
+        if (areObjectsIntersected(window.data.characterData, data)) {
           requestAnimationFrame(damageCharacter(data));
         }
 
@@ -202,7 +201,7 @@
       );
     };
 
-    hyenasData.forEach(renderHyena);
+    window.data.hyenasData.forEach(renderHyena);
   };
 
   window.controllers.hyenas = {

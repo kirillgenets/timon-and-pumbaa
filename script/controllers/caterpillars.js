@@ -1,7 +1,7 @@
 (() => {
   const {
     MIN_CATERPILLARS_GAP,
-    MAX_CATERPILLARS_COUNT,
+    MAX_CATERPILLARS_GAP,
     MAX_CATERPILLARS_COUNT,
     CATERPILLAR_HP_INCREASE,
     Direction,
@@ -11,12 +11,6 @@
   const { ObjectPositionIterator } = window.utils;
   const { CaterpillarDataModel } = window.models;
   const { GameObjectView } = window.views;
-  const {
-    caterpillarsData,
-    gameState,
-    hpCounterData,
-    scoreCounterData,
-  } = window.data;
 
   const initialCaterpillarData = {
     width: 62,
@@ -30,7 +24,9 @@
 
   const playgroundElement = document.querySelector(".playground");
 
-  const createCaterpillarsData = (initialPosition) => {
+  const createCaterpillarsData = (
+    initialPosition = initialCaterpillarData.position.x
+  ) => {
     const positionIterator = new ObjectPositionIterator({
       initialPosition,
       minGap: MIN_CATERPILLARS_GAP,
@@ -38,7 +34,7 @@
     });
 
     for (let i = 0; i < MAX_CATERPILLARS_COUNT; i++) {
-      caterpillarsData.push(
+      window.data.caterpillarsData.push(
         new CaterpillarDataModel({
           ...initialCaterpillarData,
           position: {
@@ -52,43 +48,43 @@
 
   const renderCaterpillars = () => {
     const regenerateCaterpillars = () => {
-      if (caterpillarsData.length > 0) return;
+      if (window.data.caterpillarsData.length > 0) return;
 
       createCaterpillarsData(playgroundElement.clientWidth);
       renderCaterpillars();
     };
 
     const removeCaterpillar = (instance, data) => {
-      const index = caterpillarsData.findIndex((originalData) =>
+      const index = window.data.caterpillarsData.findIndex((originalData) =>
         areObjectsEqual(originalData, data)
       );
 
       instance.destroy();
-      caterpillarsData.splice(index, 1);
+      window.data.caterpillarsData.splice(index, 1);
     };
 
     const moveCaterpillar = (data, index, instance) => () => {
-      if (!gameState.isStarted) return;
+      if (!window.data.gameState.isStarted) return;
 
-      if (!gameState.isPaused) {
+      if (!window.data.gameState.isPaused) {
         if (shouldBackgroundMove()) {
-          switch (characterData.direction) {
+          switch (window.data.characterData.direction) {
             case Direction.LEFT:
-              data.position.x += backgroundData.speed;
+              data.position.x += window.data.backgroundData.speed;
               break;
             case Direction.RIGHT:
-              data.position.x -= backgroundData.speed;
+              data.position.x -= window.data.backgroundData.speed;
               break;
           }
 
           instance.move(data.position);
         }
 
-        if (areObjectsIntersected(data, characterData)) {
+        if (areObjectsIntersected(data, window.data.characterData)) {
           removeCaterpillar(instance, data);
           regenerateCaterpillars();
-          scoreCounterData.value++;
-          hpCounterData.value += CATERPILLAR_HP_INCREASE;
+          window.data.scoreCounterData.value++;
+          window.data.hpCounterData.value += CATERPILLAR_HP_INCREASE;
           return;
         }
       }
@@ -103,7 +99,7 @@
       requestAnimationFrame(moveCaterpillar(data, index, caterpillarInstance));
     };
 
-    caterpillarsData.forEach(renderCaterpillar);
+    window.data.caterpillarsData.forEach(renderCaterpillar);
   };
 
   window.controllers.caterpillars = {
