@@ -1,4 +1,6 @@
 (() => {
+  const { getElementFromTemplate } = window.utils;
+
   class BackgroundView {
     constructor({ position, element }) {
       this._position = position;
