@@ -23,7 +23,8 @@
     },
   };
 
-  const JUMP_HEIGHT = 250;
+  const JUMP_HEIGHT = 400;
+  const STANDARD_CHARACTER_POSITION = 100;
 
   const initialCharacterData = {
     width: 160,
@@ -61,6 +62,12 @@
           window.data.characterData.directions.left = true;
           window.data.characterData.isMoving = true;
           break;
+        case Key.ARROW_UP:
+          if (window.data.characterData.directions.bottom) break;
+
+          window.data.characterData.directions.top = true;
+          window.data.characterData.isMoving = true;
+          break;
       }
     };
 
@@ -94,6 +101,28 @@
         window.data.characterData.sprite.data = SpriteData.RUNNING;
       }
 
+      if (window.data.characterData.directions.top) {
+        window.data.characterData.sprite.data = SpriteData.JUMPING;
+      }
+
+      if (
+        window.data.characterData.directions.top &&
+        window.data.characterData.position.y >= JUMP_HEIGHT
+      ) {
+        window.data.characterData.directions.top = false;
+        window.data.characterData.directions.bottom = true;
+        window.data.characterData.position.y = JUMP_HEIGHT;
+      }
+
+      if (
+        window.data.characterData.directions.bottom &&
+        window.data.characterData.position.y <= STANDARD_CHARACTER_POSITION
+      ) {
+        window.data.characterData.directions.top = false;
+        window.data.characterData.directions.bottom = false;
+        window.data.characterData.position.y = STANDARD_CHARACTER_POSITION;
+      }
+
       window.data.characterData.position.x += window.data.characterData
         .directions.right
         ? window.data.characterData.speed
@@ -101,6 +130,16 @@
 
       window.data.characterData.position.x -= window.data.characterData
         .directions.left
+        ? window.data.characterData.speed
+        : 0;
+
+      window.data.characterData.position.y += window.data.characterData
+        .directions.top
+        ? window.data.characterData.speed
+        : 0;
+
+      window.data.characterData.position.y -= window.data.characterData
+        .directions.bottom
         ? window.data.characterData.speed
         : 0;
 

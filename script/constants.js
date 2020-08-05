@@ -1,5 +1,5 @@
 (() => {
-  const MAX_BACKGROUND_POSITION = -4000;
+  const MAX_BACKGROUND_POSITION = -6000;
 
   const Key = {
     SPACE: "Space",

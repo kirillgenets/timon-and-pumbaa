@@ -9,8 +9,8 @@
   const { AnimatedGameObjectView, AnimationSprite } = window.views;
 
   const MAX_HYENAS_COUNT = 3;
-  const MIN_HYENAS_GAP = 200;
-  const MAX_HYENAS_GAP = 500;
+  const MIN_HYENAS_GAP = 400;
+  const MAX_HYENAS_GAP = 700;
   const HYENAS_POSITION_SPREAD = 250;
 
   const Direction = {
