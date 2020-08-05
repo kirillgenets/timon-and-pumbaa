@@ -1,13 +1,27 @@
 (() => {
   const { CharacterDataModel } = window.models;
-  const {
-    SpriteData,
-    Direction,
-    Key,
-    MAX_BACKGROUND_POSITION,
-  } = window.constants;
+  const { Direction, Key, MAX_BACKGROUND_POSITION } = window.constants;
   const { areObjectsEqual } = window.utils;
   const { AnimationSprite, AnimatedGameObjectView } = window.views;
+
+  const SpriteData = {
+    STANDING: {
+      url: "media/img/sprites/pumba-standing.png",
+      framesWidth: 165,
+    },
+    RUNNING: {
+      url: "media/img/sprites/pumba-running.png",
+      framesWidth: 130,
+    },
+    JUMPING: {
+      url: "media/img/sprites/pumba-jumping.png",
+      framesWidth: 100,
+    },
+    DYING: {
+      url: "media/img/sprites/pumba-dying.png",
+      framesWidth: 120,
+    },
+  };
 
   const initialCharacterData = {
     width: 160,
@@ -19,7 +33,7 @@
       y: 100,
     },
     template: document.querySelector("#character"),
-    sprite: { data: SpriteData.CHARACTER.standing, position: 0 },
+    sprite: { data: SpriteData.STANDING, position: 0 },
     isMoving: false,
   };
 
@@ -60,16 +74,16 @@
         case Direction.RIGHT:
           window.data.characterData.position.x +=
             window.data.characterData.speed;
-          window.data.characterData.sprite.data = SpriteData.CHARACTER.running;
+          window.data.characterData.sprite.data = SpriteData.RUNNING;
           break;
         case Direction.LEFT:
           window.data.characterData.position.x -=
             window.data.characterData.speed;
-          window.data.characterData.sprite.data = SpriteData.CHARACTER.running;
+          window.data.characterData.sprite.data = SpriteData.RUNNING;
           break;
         case Direction.NONE:
         default:
-          window.data.characterData.sprite.data = SpriteData.CHARACTER.standing;
+          window.data.characterData.sprite.data = SpriteData.STANDING;
           break;
       }
 

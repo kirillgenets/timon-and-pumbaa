@@ -5,16 +5,14 @@
     areObjectsIntersected,
   } = window.utils;
   const { shouldBackgroundMove } = window.controllers.utils;
-  const {
-    SpriteData,
-    Direction,
-    MIN_HYENAS_GAP,
-    MAX_HYENAS_GAP,
-    MAX_HYENAS_COUNT,
-    HYENAS_POSITION_SPREAD,
-  } = window.constants;
+  const { Direction } = window.constants;
   const { HyenaDataModel } = window.models;
   const { AnimatedGameObjectView, AnimationSprite } = window.views;
+
+  const MAX_HYENAS_COUNT = 3;
+  const MIN_HYENAS_GAP = 200;
+  const MAX_HYENAS_GAP = 500;
+  const HYENAS_POSITION_SPREAD = 250;
 
   const initialHyenaData = {
     width: 160,
@@ -26,7 +24,13 @@
       y: 100,
     },
     template: document.querySelector("#hyena"),
-    sprite: { data: SpriteData.HYENA.running, position: 0 },
+    sprite: {
+      data: {
+        url: "media/img/sprites/hyena-running.png",
+        framesWidth: 160,
+      },
+      position: 0,
+    },
     damage: 30,
     damageTime: null,
     previousDamage: null,
@@ -34,9 +38,11 @@
 
   const playgroundElement = document.querySelector(".playground");
 
-  const createHyenasData = () => {
+  const createHyenasData = (
+    initialPosition = playgroundElement.clientWidth / 2
+  ) => {
     const positionIterator = new ObjectPositionIterator({
-      initialPosition: playgroundElement.clientWidth,
+      initialPosition,
       minGap: MIN_HYENAS_GAP,
       maxGap: MAX_HYENAS_GAP,
     });
@@ -58,7 +64,7 @@
     const regenerateHyenas = () => {
       if (window.data.hyenasData.length > 0) return;
 
-      createHyenasData();
+      createHyenasData(playgroundElement.clientWidth);
       renderHyenas();
     };
 
@@ -85,17 +91,6 @@
 
       data.previousDamage = currentTime;
       window.data.hpCounterData.value -= data.damage;
-    };
-
-    const getSpriteInstance = (newSprite, previousSprite, spriteInstance) => {
-      if (!areObjectsEqual(newSprite, previousSprite)) {
-        return new AnimationSprite({
-          position: 0,
-          ...newSprite,
-        });
-      }
-
-      return spriteInstance;
     };
 
     const normalizeHyenaPosition = (data) => {
@@ -175,14 +170,7 @@
           return;
         }
 
-        instance.move(
-          data.position,
-          getSpriteInstance(
-            data.sprite.data,
-            previousSprite.data,
-            spriteInstance
-          )
-        );
+        instance.move(data.position, spriteInstance);
       }
 
       requestAnimationFrame(moveHyena(data, index, instance, spriteInstance));

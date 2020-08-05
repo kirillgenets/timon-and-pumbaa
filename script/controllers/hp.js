@@ -1,7 +1,9 @@
 (() => {
-  const { MAX_HP, HP_DECREASE_STEP } = window.constants;
   const { HpCounterDataModel } = window.models;
   const { HpCounterView } = window.views;
+
+  const HP_DECREASE_STEP = 1;
+  const MAX_HP = 100;
 
   const initialHpCounterData = {
     value: 100,

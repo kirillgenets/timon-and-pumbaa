@@ -1,16 +1,15 @@
 (() => {
-  const {
-    MIN_CATERPILLARS_GAP,
-    MAX_CATERPILLARS_GAP,
-    MAX_CATERPILLARS_COUNT,
-    CATERPILLAR_HP_INCREASE,
-    Direction,
-  } = window.constants;
+  const { Direction } = window.constants;
   const { areObjectsEqual, areObjectsIntersected } = window.utils;
   const { shouldBackgroundMove } = window.controllers.utils;
   const { ObjectPositionIterator } = window.utils;
   const { CaterpillarDataModel } = window.models;
   const { GameObjectView } = window.views;
+
+  const MAX_CATERPILLARS_COUNT = 5;
+  const MIN_CATERPILLARS_GAP = 300;
+  const MAX_CATERPILLARS_GAP = 800;
+  const CATERPILLAR_HP_INCREASE = 15;
 
   const initialCaterpillarData = {
     width: 62,
