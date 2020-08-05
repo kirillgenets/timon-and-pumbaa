@@ -1,6 +1,6 @@
 (() => {
   const { CharacterDataModel } = window.models;
-  const { Direction, Key, MAX_BACKGROUND_POSITION } = window.constants;
+  const { Key, MAX_BACKGROUND_POSITION } = window.constants;
   const { areObjectsEqual } = window.utils;
   const { AnimationSprite, AnimatedGameObjectView } = window.views;
 
@@ -23,11 +23,18 @@
     },
   };
 
+  const JUMP_HEIGHT = 250;
+
   const initialCharacterData = {
     width: 160,
     height: 100,
     speed: 3,
-    direction: Direction.NONE,
+    directions: {
+      top: false,
+      bottom: false,
+      left: false,
+      right: false,
+    },
     position: {
       x: 0,
       y: 100,
@@ -47,20 +54,26 @@
     const handleCharacterKeyDown = (evt) => {
       switch (evt.code) {
         case Key.ARROW_RIGHT:
-          window.data.characterData.direction = Direction.RIGHT;
+          window.data.characterData.directions.right = true;
           window.data.characterData.isMoving = true;
           break;
         case Key.ARROW_LEFT:
-          window.data.characterData.direction = Direction.LEFT;
+          window.data.characterData.directions.left = true;
           window.data.characterData.isMoving = true;
           break;
       }
     };
 
     const handleCharacterKeyUp = (evt) => {
-      if (evt.code === Key.ARROW_LEFT || evt.code === Key.ARROW_RIGHT) {
-        window.data.characterData.direction = Direction.NONE;
-        window.data.characterData.isMoving = false;
+      switch (evt.code) {
+        case Key.ARROW_RIGHT:
+          window.data.characterData.directions.right = false;
+          window.data.characterData.isMoving = false;
+          break;
+        case Key.ARROW_LEFT:
+          window.data.characterData.directions.left = false;
+          window.data.characterData.isMoving = false;
+          break;
       }
     };
 
@@ -70,22 +83,26 @@
           window.data.characterData.width >=
         playgroundElement.clientWidth / 2 + window.data.characterData.width / 2;
 
-      switch (window.data.characterData.direction) {
-        case Direction.RIGHT:
-          window.data.characterData.position.x +=
-            window.data.characterData.speed;
-          window.data.characterData.sprite.data = SpriteData.RUNNING;
-          break;
-        case Direction.LEFT:
-          window.data.characterData.position.x -=
-            window.data.characterData.speed;
-          window.data.characterData.sprite.data = SpriteData.RUNNING;
-          break;
-        case Direction.NONE:
-        default:
-          window.data.characterData.sprite.data = SpriteData.STANDING;
-          break;
+      if (!window.data.characterData.isMoving) {
+        window.data.characterData.sprite.data = SpriteData.STANDING;
       }
+
+      if (
+        window.data.characterData.directions.left ||
+        window.data.characterData.directions.right
+      ) {
+        window.data.characterData.sprite.data = SpriteData.RUNNING;
+      }
+
+      window.data.characterData.position.x += window.data.characterData
+        .directions.right
+        ? window.data.characterData.speed
+        : 0;
+
+      window.data.characterData.position.x -= window.data.characterData
+        .directions.left
+        ? window.data.characterData.speed
+        : 0;
 
       if (window.data.characterData.position.x < 0) {
         window.data.characterData.position.x = 0;

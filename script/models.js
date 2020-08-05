@@ -37,7 +37,7 @@
       width,
       height,
       speed,
-      direction,
+      directions,
       position,
       template,
       sprite,
@@ -46,7 +46,7 @@
       this.width = width;
       this.height = height;
       this.speed = speed;
-      this.direction = direction;
+      this.directions = directions;
       this.position = position;
       this.template = template;
       this.sprite = sprite;

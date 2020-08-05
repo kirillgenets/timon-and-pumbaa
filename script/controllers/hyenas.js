@@ -5,7 +5,6 @@
     areObjectsIntersected,
   } = window.utils;
   const { shouldBackgroundMove } = window.controllers.utils;
-  const { Direction } = window.constants;
   const { HyenaDataModel } = window.models;
   const { AnimatedGameObjectView, AnimationSprite } = window.views;
 
@@ -13,6 +12,11 @@
   const MIN_HYENAS_GAP = 200;
   const MAX_HYENAS_GAP = 500;
   const HYENAS_POSITION_SPREAD = 250;
+
+  const Direction = {
+    RIGHT: "right",
+    LEFT: "left",
+  };
 
   const initialHyenaData = {
     width: 160,
@@ -95,7 +99,7 @@
 
     const normalizeHyenaPosition = (data) => {
       if (
-        window.data.characterData.direction === Direction.LEFT &&
+        window.data.characterData.directions.left &&
         data.direction === Direction.LEFT
       ) {
         data.initialPosition.x += window.data.characterData.speed;
@@ -103,7 +107,7 @@
       }
 
       if (
-        window.data.characterData.direction === Direction.RIGHT &&
+        window.data.characterData.directions.right &&
         data.direction === Direction.RIGHT
       ) {
         data.initialPosition.x -= window.data.characterData.speed;
@@ -111,7 +115,7 @@
       }
 
       if (
-        window.data.characterData.direction === Direction.LEFT &&
+        window.data.characterData.directions.left &&
         data.direction === Direction.RIGHT
       ) {
         data.initialPosition.x += window.data.characterData.speed - data.speed;
@@ -119,7 +123,7 @@
       }
 
       if (
-        window.data.characterData.direction === Direction.RIGHT &&
+        window.data.characterData.directions.right &&
         data.direction === Direction.LEFT
       ) {
         data.initialPosition.x -= window.data.characterData.speed - data.speed;
@@ -156,8 +160,6 @@
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused) {
-        const previousSprite = { ...data.sprite };
-
         updateHyenaPosition(data);
 
         if (areObjectsIntersected(window.data.characterData, data)) {

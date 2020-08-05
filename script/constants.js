@@ -1,12 +1,6 @@
 (() => {
   const MAX_BACKGROUND_POSITION = -4000;
 
-  const Direction = {
-    RIGHT: "right",
-    LEFT: "left",
-    NONE: "none",
-  };
-
   const Key = {
     SPACE: "Space",
     ESC: "Escape",
@@ -17,9 +11,6 @@
 
   window.constants = {
     MAX_BACKGROUND_POSITION,
-    HP_DECREASE_STEP,
-    MAX_HP,
-    Direction,
     Key,
   };
 })();

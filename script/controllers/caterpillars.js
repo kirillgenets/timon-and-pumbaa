@@ -67,14 +67,13 @@
 
       if (!window.data.gameState.isPaused) {
         if (shouldBackgroundMove()) {
-          switch (window.data.characterData.direction) {
-            case Direction.LEFT:
-              data.position.x += window.data.backgroundData.speed;
-              break;
-            case Direction.RIGHT:
-              data.position.x -= window.data.backgroundData.speed;
-              break;
-          }
+          data.position.x += window.data.characterData.directions.left
+            ? window.data.backgroundData.speed
+            : 0;
+
+          data.position.x -= window.data.characterData.directions.right
+            ? window.data.backgroundData.speed
+            : 0;
 
           instance.move(data.position);
         }

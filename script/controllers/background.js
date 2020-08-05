@@ -1,5 +1,5 @@
 (() => {
-  const { MAX_BACKGROUND_POSITION, Direction } = window.constants;
+  const { MAX_BACKGROUND_POSITION } = window.constants;
   const { shouldBackgroundMove } = window.controllers.utils;
   const { BackgroundDataModel } = window.models;
   const { BackgroundView } = window.views;
@@ -21,16 +21,14 @@
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused && shouldBackgroundMove()) {
-        switch (window.data.characterData.direction) {
-          case Direction.LEFT:
-            window.data.backgroundData.position +=
-              window.data.backgroundData.speed;
-            break;
-          case Direction.RIGHT:
-            window.data.backgroundData.position -=
-              window.data.backgroundData.speed;
-            break;
-        }
+        window.data.backgroundData.position += window.data.characterData
+          .directions.left
+          ? window.data.backgroundData.speed
+          : 0;
+        window.data.backgroundData.position -= window.data.characterData
+          .directions.right
+          ? window.data.backgroundData.speed
+          : 0;
 
         if (window.data.backgroundData.position > 0) {
           window.data.backgroundData.position = 0;
