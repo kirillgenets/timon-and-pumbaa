@@ -1,6 +1,10 @@
 (() => {
+  const {
+    Key,
+    MAX_BACKGROUND_POSITION,
+    OBJECTS_BOTTOM_POSITION,
+  } = window.constants;
   const { CharacterDataModel } = window.models;
-  const { Key, MAX_BACKGROUND_POSITION } = window.constants;
   const { areObjectsEqual } = window.utils;
   const { AnimationSprite, AnimatedGameObjectView } = window.views;
 
@@ -38,7 +42,7 @@
     },
     position: {
       x: 0,
-      y: 100,
+      y: OBJECTS_BOTTOM_POSITION,
     },
     template: document.querySelector("#character"),
     sprite: { data: SpriteData.STANDING, position: 0 },

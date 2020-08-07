@@ -1,4 +1,5 @@
 (() => {
+  const { OBJECTS_BOTTOM_POSITION } = window.constants;
   const {
     ObjectPositionIterator,
     areObjectsEqual,
@@ -25,7 +26,7 @@
     direction: Direction.LEFT,
     position: {
       x: 0,
-      y: 100,
+      y: OBJECTS_BOTTOM_POSITION,
     },
     template: document.querySelector("#hyena"),
     sprite: {

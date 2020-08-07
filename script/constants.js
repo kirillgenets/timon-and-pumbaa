@@ -1,6 +1,8 @@
 (() => {
   const MAX_BACKGROUND_POSITION = -6000;
 
+  const OBJECTS_BOTTOM_POSITION = 100;
+
   const Key = {
     SPACE: "Space",
     ESC: "Escape",
@@ -11,6 +13,7 @@
 
   window.constants = {
     MAX_BACKGROUND_POSITION,
+    OBJECTS_BOTTOM_POSITION,
     Key,
   };
 })();

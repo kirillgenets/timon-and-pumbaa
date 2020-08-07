@@ -1,5 +1,5 @@
 (() => {
-  const { Direction } = window.constants;
+  const { OBJECTS_BOTTOM_POSITION } = window.constants;
   const { areObjectsEqual, areObjectsIntersected } = window.utils;
   const { shouldBackgroundMove } = window.controllers.utils;
   const { ObjectPositionIterator } = window.utils;
@@ -16,7 +16,7 @@
     height: 50,
     position: {
       x: 0,
-      y: 100,
+      y: OBJECTS_BOTTOM_POSITION,
     },
     template: document.querySelector("#caterpillar"),
   };
