@@ -96,6 +96,12 @@
       ? null
       : Date.now();
     window.data.gameState.isPaused = !window.data.gameState.isPaused;
+
+    if (window.audio.backgroundAudio.paused) {
+      window.audio.backgroundAudio.play();
+    } else {
+      window.audio.backgroundAudio.pause();
+    }
   };
 
   // Data creation
@@ -131,6 +137,8 @@
     renderAllObjects();
 
     document.addEventListener("keydown", handlePauseKeyDown);
+
+    window.audio.backgroundAudio.play();
   };
 
   // Event listeners
