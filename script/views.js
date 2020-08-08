@@ -77,14 +77,24 @@
   class AnimatedGameObjectView extends GameObjectView {
     constructor(props) {
       super(props);
+
+      this._previousDirections = {};
     }
 
-    move(position, sprite) {
+    move(position, sprite, directions = {}) {
       if (!this._element) return;
 
       this._position = position;
       this._element.style.left = `${this._position.x}px`;
       this._element.style.bottom = `${this._position.y}px`;
+      this._element.style.transform =
+        directions.left || this._previousDirections.left
+          ? "scale(-1, 1)"
+          : "none";
+
+      if (directions.left || directions.right) {
+        this._previousDirections = { ...directions };
+      }
 
       requestAnimationFrame(() => {
         sprite.animate(this._element);

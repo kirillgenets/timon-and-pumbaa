@@ -200,7 +200,8 @@
 
         characterInstance.move(
           window.data.characterData.position,
-          getSpriteInstance(previousSprite)
+          getSpriteInstance(previousSprite),
+          window.data.characterData.directions
         );
 
         if (
