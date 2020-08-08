@@ -137,6 +137,8 @@
   // Main functions
 
   const initGame = () => {
+    if (window.data.gameState.isStarted) return;
+
     showElement(playgroundElement);
     showElement(statePanelElement);
 
