@@ -1,5 +1,5 @@
 (() => {
-  const { Key } = window.constants;
+  const { Key, DEFAULT_STATS } = window.constants;
   const { GameStateDataModel } = window.models;
   const { hideElement, showElement } = window.utils;
   const {
@@ -22,7 +22,9 @@
   const initialGameState = {
     isStarted: false,
     isPaused: false,
-    stats: [],
+    isOver: false,
+    stats: DEFAULT_STATS,
+    userName: "",
   };
 
   // DOM-elements
@@ -37,6 +39,7 @@
 
   const playgroundElement = gameWrapperElement.querySelector(".playground");
   const statePanelElement = gameWrapperElement.querySelector(".panel");
+  const userNameElement = statePanelElement.querySelector(".user-name");
 
   // Data initialization
 
@@ -49,8 +52,6 @@
     introVideoElement.currentTime = 0;
 
     hideElement(introVideoElement);
-    showElement(playgroundElement);
-    showElement(statePanelElement);
   };
 
   // Event handlers
@@ -76,13 +77,18 @@
   };
 
   const handleStartGameButtonClick = () => {
-    hideElement(startModalElement);
+    window.data.gameState.userName = loginInput.value;
 
     introVideoElement.addEventListener("ended", handleIntroVideoEnded);
     document.addEventListener("keydown", handleIntroVideoCloseKeyDown);
 
+    hideElement(startModalElement);
+
     showElement(introVideoElement);
     introVideoElement.play();
+
+    loginInput.removeEventListener("input", handleLoginInput);
+    startGameButton.removeEventListener("click", handleStartGameButtonClick);
   };
 
   const handlePauseKeyDown = (evt) => {
@@ -131,7 +137,13 @@
   // Main functions
 
   const initGame = () => {
+    showElement(playgroundElement);
+    showElement(statePanelElement);
+
+    window.data.gameState.isOver = false;
     window.data.gameState.isStarted = true;
+
+    userNameElement.textContent = window.data.gameState.userName;
 
     createAllObjectsData();
     renderAllObjects();
@@ -145,4 +157,6 @@
 
   loginInput.addEventListener("input", handleLoginInput);
   startGameButton.addEventListener("click", handleStartGameButtonClick);
+
+  window.controllers.initGame = initGame;
 })();

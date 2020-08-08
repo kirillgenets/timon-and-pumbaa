@@ -20,6 +20,11 @@
 
   const renderTimer = () => {
     const updateTimer = () => {
+      if (window.data.gameState.isOver) {
+        timerInstance.destroy();
+        return;
+      }
+
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused) {
@@ -27,12 +32,12 @@
           (Date.now() - window.data.timerData.startTime) / 1000;
         const minutes = Math.floor(currentTime / 60);
         const seconds = Math.floor(currentTime % 60);
-        const newValue = `${minutes > 9 ? minutes : `0${minutes}`}:${
+        const preparedValue = `${minutes > 9 ? minutes : `0${minutes}`}:${
           seconds > 9 ? seconds : `0${seconds}`
         }`;
 
-        window.data.timerData.value = newValue;
-        timerInstance.update(window.data.timerData.value);
+        window.data.timerData.value = Math.floor(currentTime);
+        timerInstance.update(preparedValue);
       }
 
       requestAnimationFrame(updateTimer);

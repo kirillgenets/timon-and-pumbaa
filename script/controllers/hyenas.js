@@ -158,6 +158,11 @@
     };
 
     const moveHyena = (data, index, instance, spriteInstance) => () => {
+      if (window.data.gameState.isOver) {
+        removeHyena(instance, data);
+        return;
+      }
+
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused) {

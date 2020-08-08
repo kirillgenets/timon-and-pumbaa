@@ -27,7 +27,7 @@
     },
   };
 
-  const JUMP_HEIGHT = 400;
+  const JUMP_HEIGHT = 350;
   const STANDARD_CHARACTER_POSITION = 100;
 
   const initialCharacterData = {
@@ -57,6 +57,8 @@
 
   const renderCharacter = () => {
     const handleCharacterKeyDown = (evt) => {
+      if (!window.data.characterData.directions) return;
+
       switch (evt.code) {
         case Key.ARROW_RIGHT:
           window.data.characterData.directions.right = true;
@@ -76,6 +78,8 @@
     };
 
     const handleCharacterKeyUp = (evt) => {
+      if (!window.data.characterData.directions) return;
+
       switch (evt.code) {
         case Key.ARROW_RIGHT:
           window.data.characterData.directions.right = false;
@@ -105,7 +109,10 @@
         window.data.characterData.sprite.data = SpriteData.RUNNING;
       }
 
-      if (window.data.characterData.directions.top) {
+      if (
+        window.data.characterData.directions.top ||
+        window.data.characterData.directions.bottom
+      ) {
         window.data.characterData.sprite.data = SpriteData.JUMPING;
       }
 
@@ -176,6 +183,14 @@
     };
 
     const moveCharacter = () => {
+      if (window.data.gameState.isOver) {
+        characterInstance.destroy();
+
+        document.removeEventListener("keydown", handleCharacterKeyDown);
+        document.removeEventListener("keyup", handleCharacterKeyUp);
+        return;
+      }
+
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused) {
@@ -187,6 +202,13 @@
           window.data.characterData.position,
           getSpriteInstance(previousSprite)
         );
+
+        if (
+          window.data.characterData.position.x >=
+          playgroundElement.clientWidth - window.data.characterData.width
+        ) {
+          window.controllers.overGame();
+        }
       }
 
       requestAnimationFrame(moveCharacter);

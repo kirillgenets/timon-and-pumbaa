@@ -1,9 +1,11 @@
 (() => {
   class GameStateDataModel {
-    constructor({ isStarted, stats, isPaused }) {
+    constructor({ isStarted, stats, isPaused, userName, isOver }) {
       this.isStarted = isStarted;
       this.isPaused = isPaused;
+      this.isOver = isOver;
       this.stats = stats;
+      this.userName = userName;
     }
   }
 
@@ -46,8 +48,8 @@
       this.width = width;
       this.height = height;
       this.speed = speed;
-      this.directions = directions;
-      this.position = position;
+      this.directions = { ...directions };
+      this.position = { ...position };
       this.template = template;
       this.sprite = sprite;
       this.isMoving = isMoving;
@@ -71,7 +73,7 @@
       this.height = height;
       this.speed = speed;
       this.direction = direction;
-      this.position = position;
+      this.position = { ...position };
       this.initialPosition = { ...position };
       this.template = template;
       this.sprite = sprite;

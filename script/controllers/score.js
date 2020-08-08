@@ -19,6 +19,11 @@
 
   const renderScoreCounter = () => {
     const updateScoreCounter = () => {
+      if (window.data.gameState.isOver) {
+        scoreCounterInstance.destroy();
+        return;
+      }
+
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused) {

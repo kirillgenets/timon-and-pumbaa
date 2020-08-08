@@ -6,10 +6,10 @@
   const { CaterpillarDataModel } = window.models;
   const { GameObjectView } = window.views;
 
-  const MAX_CATERPILLARS_COUNT = 5;
-  const MIN_CATERPILLARS_GAP = 300;
-  const MAX_CATERPILLARS_GAP = 800;
-  const CATERPILLAR_HP_INCREASE = 15;
+  const MAX_CATERPILLARS_COUNT = 12;
+  const MIN_CATERPILLARS_GAP = 100;
+  const MAX_CATERPILLARS_GAP = 300;
+  const CATERPILLAR_HP_INCREASE = 5;
 
   const initialCaterpillarData = {
     width: 62,
@@ -24,7 +24,7 @@
   const playgroundElement = document.querySelector(".playground");
 
   const createCaterpillarsData = (
-    initialPosition = initialCaterpillarData.position.x
+    initialPosition = playgroundElement.clientWidth / 2
   ) => {
     const positionIterator = new ObjectPositionIterator({
       initialPosition,
@@ -63,6 +63,11 @@
     };
 
     const moveCaterpillar = (data, index, instance) => () => {
+      if (window.data.gameState.isOver) {
+        removeCaterpillar(instance, data);
+        return;
+      }
+
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused) {
@@ -76,6 +81,12 @@
             : 0;
 
           instance.move(data.position);
+        }
+
+        if (data.position.x + data.width < 0) {
+          removeCaterpillar(instance, data);
+          regenerateCaterpillars();
+          return;
         }
 
         if (areObjectsIntersected(data, window.data.characterData)) {

@@ -9,6 +9,7 @@
 
     setImage(url) {
       this._element.style.backgroundImage = `url("${url}")`;
+      this._element.style.backgroundPosition = `${this._position}px`;
     }
 
     move(position) {

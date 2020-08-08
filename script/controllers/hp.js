@@ -31,6 +31,11 @@
     };
 
     const updateHpCounter = () => {
+      if (window.data.gameState.isOver) {
+        hpCounterInstance.destroy();
+        return;
+      }
+
       if (!window.data.gameState.isStarted) return;
 
       if (!window.data.gameState.isPaused) {
@@ -38,6 +43,7 @@
 
         if (window.data.hpCounterData.value < 0) {
           window.data.hpCounterData.value = 0;
+          window.controllers.overGame();
         }
 
         if (window.data.hpCounterData.value > MAX_HP) {
