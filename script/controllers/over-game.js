@@ -76,8 +76,9 @@
   const renderResultsTable = () => {
     resultsTableElement.innerHTML = "";
 
-    getPreparedStats().forEach(({ name, score }) => {
+    getPreparedStats().forEach(({ name, score }, index) => {
       const row = getElementFromTemplate(resultElementTemplate);
+      row.querySelector(".position").textContent = index + 1;
       row.querySelector(".name").textContent = name;
       row.querySelector(".score").textContent = score;
 
